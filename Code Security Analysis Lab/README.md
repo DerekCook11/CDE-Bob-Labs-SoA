@@ -45,6 +45,8 @@ Before starting, ensure you have:
 - [ ] Python 3.8+ installed
 - [ ] Bob installed and running
 - [ ] Understanding of basic web security concepts
+- [ ] (optional) git clone https://github.com/annumberhocker/bob-lab-assets
+- [ ] (optional) cd bob-lab-assets && ./txc-lab-prereq.sh
 
 ## Lab Structure
 
