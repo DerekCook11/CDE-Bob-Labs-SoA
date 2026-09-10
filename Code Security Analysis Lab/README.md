@@ -3,6 +3,7 @@
 Analyze a vulnerable todo application, identify security issues with Bob, plan fixes, and implement secure coding improvements.
 
 **Duration:** 30 minutes
+
 **Difficulty:** Intermediate
 
 ## Overview
@@ -11,10 +12,6 @@ In this lab, you'll use Bob to analyze existing code, identify security vulnerab
 
 > **🔍 Bob Differentiator: Bob Findings**
 > This lab showcases Bob Findings, Bob's automated security and code quality analysis engine. Unlike simple linters, Bob Findings provides continuous, proactive analysis with specific remediation recommendations, severity ratings, and code examples. It's like having a security expert reviewing your code in real-time!
-
-**Duration**: 30 minutes
-
-**Difficulty**: Intermediate
 
 ## What You'll Analyze
 
@@ -37,16 +34,6 @@ By the end of this lab, you will:
 - ✅ Find hardcoded secrets and credentials
 - ✅ Implement security fixes using Agent mode
 - ✅ Apply secure coding best practices
-
-## Prerequisites
-
-Before starting, ensure you have:
-
-- [ ] Python 3.8+ installed
-- [ ] Bob installed and running
-- [ ] Understanding of basic web security concepts
-- [ ] (optional) git clone https://github.com/annumberhocker/bob-lab-assets
-- [ ] (optional) cd bob-lab-assets && ./txc-lab-prereq.sh
 
 ## Lab Structure
 
@@ -74,11 +61,12 @@ Open Bob and switch to **Ask Mode** (❓).
 **Prompt for Bob:**
 
 ```
-Please analyze the code in lab2/vulnerable-app/backend/ and explain:
+Please analyze the code in vulnerable-app/backend/ and explain:
 1. What is the overall structure of the application?
 2. How are database queries constructed?
 3. How is user input handled?
 4. What security measures are in place?
+save results as interactive html file
 ```
 
 **What to Look For:**
@@ -95,10 +83,11 @@ Bob should identify:
 **Prompt for Bob:**
 
 ```
-Analyze the frontend code in lab2/vulnerable-app/frontend/ and explain:
+Analyze the frontend code in vulnerable-app/frontend/ and explain:
 1. How is user input displayed in the UI?
 2. Are there any DOM manipulation methods that could be risky?
 3. How is data from the API rendered?
+save results as interactive html file
 ```
 
 **What to Look For:**
@@ -116,6 +105,7 @@ Bob should identify:
 ```
 Explain the search_todos() function in app.py. 
 What does it do and are there any security concerns?
+save results as interactive html file
 ```
 
 **Expected Response:**
@@ -142,13 +132,14 @@ Change from Ask to **Plan Mode** (🎯).
 **Prompt for Bob:**
 
 ```
-Analyze the codebase in lab2/vulnerable-app/ for security vulnerabilities.
+Analyze the codebase in vulnerable-app/ for security vulnerabilities.
 Create a comprehensive report including:
 1. List of all security issues found
 2. Severity rating for each issue (Critical/High/Medium/Low)
 3. Potential impact of each vulnerability
 4. Recommended fix for each issue
 5. Priority order for fixes
+save results as interactive html file
 ```
 
 **Expected Output:**
@@ -194,6 +185,7 @@ Include:
 2. Files that need to be modified
 3. Specific code changes required
 4. Testing strategy
+save results as interactive html file
 ```
 
 **Bob's Response:**
@@ -221,6 +213,7 @@ Change to **Agent Mode** (💻).
 ```
 Fix the SQL injection vulnerability in vulnerable-app/backend/app.py.
 Replace the string formatting with parameterized queries using SQLAlchemy.
+save results as interactive html file
 ```
 
 Bob should modify the `search_todos()` function to use safe queries.
@@ -233,6 +226,7 @@ Bob should modify the `search_todos()` function to use safe queries.
 Fix the XSS vulnerability in vulnerable-app/frontend/app.js.
 Replace innerHTML usage with safe DOM manipulation using textContent.
 Update all functions that display user-generated content.
+Save results as interactive html file
 ```
 
 ### 3.4: Fix Hardcoded Secrets
@@ -245,6 +239,7 @@ Fix the hardcoded secrets in vulnerable-app/backend/config.py.
 2. Create a .env.example file with placeholder values
 3. Add python-dotenv to requirements.txt
 4. Update the code to load from environment
+Save results as interactive html file
 ```
 
 ### 3.5: Add Input Validation
@@ -257,18 +252,19 @@ Validate:
 - Title is required and not empty
 - Title length is between 1 and 200 characters
 - Description length is less than 1000 characters
-Return appropriate error messages for invalid input.
+Return appropriate error messages for invalid input
+Save results as interactive html file.
 ```
 
 ### 3.6: Verify Fixes
 
-**Important**: Bob has made the fixes directly to the files in `lab2/vulnerable-app/` (not in a separate solution folder). The vulnerable code has been replaced with secure code.
+**Important**: Bob has made the fixes directly to the files in `vulnerable-app/` (not in a separate solution folder). The vulnerable code has been replaced with secure code.
 
 Run the application and test the fixes:
 
 ```bash
 # Start backend (from the vulnerable-app directory where fixes were applied)
-cd lab2/vulnerable-app/backend
+cd vulnerable-app/backend
 python -m venv venv
 source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
@@ -286,12 +282,6 @@ cd ../frontend
 2. Try XSS payload - should display as plain text (not execute)
 3. Check no secrets in code (verify config.py uses environment variables)
 4. Test input validation (try empty title, too long title, etc.)
-
-**Compare Before/After:**
-
-If you want to see the original vulnerable code, check the `lab2/solution/` directory which contains reference implementations of the fixes.
-
----
 
 ## Congratulations! 🎉
 
