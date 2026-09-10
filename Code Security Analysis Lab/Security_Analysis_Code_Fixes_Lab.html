@@ -120,11 +120,12 @@ hr{border:0;border-top:1px solid var(--line);margin:34px 0}
 <p>Open Bob and switch to <strong>Ask Mode</strong> (❓).</p>
 <h3 id="1-2-explore-the-backend">1.2: Explore the Backend</h3>
 <p><strong>Prompt for Bob:</strong></p>
-<div class="codewrap"><button class="copy-btn" type="button">Copy</button><pre><code>Please analyze the code in lab2/vulnerable-app/backend/ and explain:
+<div class="codewrap"><button class="copy-btn" type="button">Copy</button><pre><code>Please analyze the code in vulnerable-app/backend/ and explain:
 1. What is the overall structure of the application?
 2. How are database queries constructed?
 3. How is user input handled?
-4. What security measures are in place?</code></pre></div>
+4. What security measures are in place?
+save results as interactive html file</code></pre></div>
 <p><strong>What to Look For:</strong></p>
 <p>Bob should identify:</p>
 <ul>
@@ -135,10 +136,11 @@ hr{border:0;border-top:1px solid var(--line);margin:34px 0}
 </ul>
 <h3 id="1-3-explore-the-frontend">1.3: Explore the Frontend</h3>
 <p><strong>Prompt for Bob:</strong></p>
-<div class="codewrap"><button class="copy-btn" type="button">Copy</button><pre><code>Analyze the frontend code in lab2/vulnerable-app/frontend/ and explain:
+<div class="codewrap"><button class="copy-btn" type="button">Copy</button><pre><code>Analyze the frontend code in vulnerable-app/frontend/ and explain:
 1. How is user input displayed in the UI?
 2. Are there any DOM manipulation methods that could be risky?
-3. How is data from the API rendered?</code></pre></div>
+3. How is data from the API rendered?
+save results as interactive html file</code></pre></div>
 <p><strong>What to Look For:</strong></p>
 <p>Bob should identify:</p>
 <ul>
@@ -149,7 +151,8 @@ hr{border:0;border-top:1px solid var(--line);margin:34px 0}
 <h3 id="1-4-ask-about-specific-functions">1.4: Ask About Specific Functions</h3>
 <p><strong>Prompt for Bob:</strong></p>
 <div class="codewrap"><button class="copy-btn" type="button">Copy</button><pre><code>Explain the search_todos() function in app.py. 
-What does it do and are there any security concerns?</code></pre></div>
+What does it do and are there any security concerns?
+save results as interactive html file</code></pre></div>
 <p><strong>Expected Response:</strong></p>
 <p>Bob should explain that the function uses string formatting to build SQL queries, which is vulnerable to SQL injection attacks.</p>
 <p><strong>💡 Key Learning</strong>: Ask mode is perfect for understanding unfamiliar code and getting explanations of how things work.</p>
@@ -164,13 +167,14 @@ What does it do and are there any security concerns?</code></pre></div>
 <p>Bob Findings can automatically scan your code for security vulnerabilities, code quality issues, and compliance violations. The analysis you're about to request demonstrates Bob's <a href="../bob-differentiators.md#security-vulnerability-detection">Security Vulnerability Detection</a> capabilities, which go beyond basic static analysis to provide context-aware recommendations.</p>
 </blockquote>
 <p><strong>Prompt for Bob:</strong></p>
-<div class="codewrap"><button class="copy-btn" type="button">Copy</button><pre><code>Analyze the codebase in lab2/vulnerable-app/ for security vulnerabilities.
+<div class="codewrap"><button class="copy-btn" type="button">Copy</button><pre><code>Analyze the codebase in vulnerable-app/ for security vulnerabilities.
 Create a comprehensive report including:
 1. List of all security issues found
 2. Severity rating for each issue (Critical/High/Medium/Low)
 3. Potential impact of each vulnerability
 4. Recommended fix for each issue
-5. Priority order for fixes</code></pre></div>
+5. Priority order for fixes
+save results as interactive html file</code></pre></div>
 <p><strong>Expected Output:</strong></p>
 <p>Bob should provide a structured analysis like:</p>
 <div class="codewrap"><pre><code>SECURITY ANALYSIS REPORT
@@ -205,7 +209,8 @@ Include:
 1. Order of fixes (most critical first)
 2. Files that need to be modified
 3. Specific code changes required
-4. Testing strategy</code></pre></div>
+4. Testing strategy
+save results as interactive html file</code></pre></div>
 <p><strong>Bob's Response:</strong></p>
 <p>Bob will create a detailed TODO list with all the fixes needed. This demonstrates Bob's ability to break down complex problems into actionable steps.</p>
 <p><strong>⚠️ Important</strong>: Review the TODO list Bob creates, but <strong>do not implement the fixes yet</strong>. We'll examine each vulnerability type in detail in the next step before making any changes.</p>
@@ -218,20 +223,23 @@ Include:
 <h3 id="3-2-fix-sql-injection">3.2: Fix SQL Injection</h3>
 <p><strong>Prompt for Bob:</strong></p>
 <div class="codewrap"><button class="copy-btn" type="button">Copy</button><pre><code>Fix the SQL injection vulnerability in vulnerable-app/backend/app.py.
-Replace the string formatting with parameterized queries using SQLAlchemy.</code></pre></div>
+Replace the string formatting with parameterized queries using SQLAlchemy.
+save results as interactive html file</code></pre></div>
 <p>Bob should modify the <code>search_todos()</code> function to use safe queries.</p>
 <h3 id="3-3-fix-xss-vulnerability">3.3: Fix XSS Vulnerability</h3>
 <p><strong>Prompt for Bob:</strong></p>
 <div class="codewrap"><button class="copy-btn" type="button">Copy</button><pre><code>Fix the XSS vulnerability in vulnerable-app/frontend/app.js.
 Replace innerHTML usage with safe DOM manipulation using textContent.
-Update all functions that display user-generated content.</code></pre></div>
+Update all functions that display user-generated content.
+Save results as interactive html file</code></pre></div>
 <h3 id="3-4-fix-hardcoded-secrets">3.4: Fix Hardcoded Secrets</h3>
 <p><strong>Prompt for Bob:</strong></p>
 <div class="codewrap"><button class="copy-btn" type="button">Copy</button><pre><code>Fix the hardcoded secrets in vulnerable-app/backend/config.py.
 1. Move secrets to environment variables
 2. Create a .env.example file with placeholder values
 3. Add python-dotenv to requirements.txt
-4. Update the code to load from environment</code></pre></div>
+4. Update the code to load from environment
+Save results as interactive html file</code></pre></div>
 <h3 id="3-5-add-input-validation">3.5: Add Input Validation</h3>
 <p><strong>Prompt for Bob:</strong></p>
 <div class="codewrap"><button class="copy-btn" type="button">Copy</button><pre><code>Add input validation to the todo creation endpoint.
@@ -239,12 +247,13 @@ Validate:
 - Title is required and not empty
 - Title length is between 1 and 200 characters
 - Description length is less than 1000 characters
-Return appropriate error messages for invalid input.</code></pre></div>
+Return appropriate error messages for invalid input
+Save results as interactive html file.</code></pre></div>
 <h3 id="3-6-verify-fixes">3.6: Verify Fixes</h3>
-<p><strong>Important</strong>: Bob has made the fixes directly to the files in <code>lab2/vulnerable-app/</code> (not in a separate solution folder). The vulnerable code has been replaced with secure code.</p>
+<p><strong>Important</strong>: Bob has made the fixes directly to the files in <code>vulnerable-app/</code> (not in a separate solution folder). The vulnerable code has been replaced with secure code.</p>
 <p>Run the application and test the fixes:</p>
 <div class="codewrap"><pre><code class="language-bash"># Start backend (from the vulnerable-app directory where fixes were applied)
-cd lab2/vulnerable-app/backend
+cd vulnerable-app/backend
 python -m venv venv
 source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
@@ -261,9 +270,6 @@ cd ../frontend
 <li>Check no secrets in code (verify config.py uses environment variables)</li>
 <li>Test input validation (try empty title, too long title, etc.)</li>
 </ol>
-<p><strong>Compare Before/After:</strong></p>
-<p>If you want to see the original vulnerable code, check the <code>lab2/solution/</code> directory which contains reference implementations of the fixes.</p>
-<hr>
 <h2 id="congratulations">Congratulations! 🎉</h2>
 <p>You've successfully completed Security Analysis &amp; Code Fixes Lab! You've learned to:</p>
 <ul>
