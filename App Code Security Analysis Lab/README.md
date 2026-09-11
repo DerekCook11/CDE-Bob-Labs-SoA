@@ -214,13 +214,19 @@ reports/remediation-summary.md
 reports/after-security-report.md
 ```
 
+## Also Ask Bob to Generate a Report: 
+
+```text
+Generate a report in interactive HTML, so a user knows what was done from start to finish in this lab
+```
+
 ## Run and verify the secured version
 
 Complete this section only after Bob has finished modifying `secure-app/`.
 
 ### 1. Stop the baseline application
 
-Return to the terminals running the baseline backend and frontend. Press
+Return to the linux terminals running the baseline backend and frontend. Press
 `Ctrl+C` in each terminal. This releases ports `5000` and `8080` for the secured
 version.
 
