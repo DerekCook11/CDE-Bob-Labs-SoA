@@ -396,6 +396,45 @@ The complete flow is now:
 ```text
 Configure → Start → Browser test → Smoke test → Security verification → Compare
 ```
+## Lab summary
+
+In this lab, you started a working task-management application containing
+intentional security vulnerabilities and confirmed that its normal frontend,
+API, and SQLite database operations worked. You then established a measurable
+security baseline: functional tests passed, while the security regression tests
+and static verification exposed the expected weaknesses.
+
+IBM Bob was used to understand the application's architecture, identify and
+prioritize the findings, plan the remediation, and modify only `secure-app/`.
+The preserved `vulnerable-app/` remained unchanged as the before version. Bob's
+changes removed hardcoded secrets, prevented SQL injection and cross-site
+scripting, validated API input, protected internal error details, secured debug
+and CORS defaults, and prevented administrative responses from exposing
+sensitive values.
+
+Finally, you configured and started the secured version, exercised its features
+in the browser, ran an end-to-end smoke test, repeated the functional and
+security tests, and compared the before-and-after source code. Successful
+completion produced the following evidence:
+
+- The application continued to create, list, update, search, and delete tasks.
+- The functional test suite passed against the secured version.
+- The security regression test suite passed.
+- Static security verification reported `6/6 checks passed`.
+- The code comparison showed exactly what Bob changed and preserved the
+  vulnerable baseline for demonstration or reuse.
+
+The lab demonstrated a complete AI-assisted secure-development workflow:
+
+```text
+Run baseline → Identify vulnerabilities → Plan fixes → Remediate with Bob
+→ Test functionality → Verify security → Compare and document results
+```
+
+The `6/6` result confirms that the six security issues intentionally designed
+for this exercise were remediated. It is evidence for the scope of this lab,
+not a comprehensive production security certification.
+
 
 ## Reset the lab
 
