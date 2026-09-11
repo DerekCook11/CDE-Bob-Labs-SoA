@@ -102,7 +102,6 @@ If Python tooling is not installed, an administrator runs this command once:
 ```bash
 chmod +x lab-preflight-and-smoke-test.sh
 ./lab-preflight-and-smoke-test.sh
-sudo dnf install -y python3 python3-pip
 ```
 
 All application commands should run as a normal user. Do not run the Flask
