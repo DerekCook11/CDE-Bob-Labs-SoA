@@ -113,10 +113,6 @@ Make the helper scripts executable:
 
 ```bash
 chmod +x scripts/*.sh
-Terminal1 - ./scripts/start-backend.sh vulnerable-app
-Terminal2 - ./scripts/start-frontend.sh vulnerable-app
-Terminal3 - ./lab-preflight-and-smoke-test.sh --smoke-test
-
 ```
 
 In the first terminal, start the Flask backend:
@@ -132,6 +128,12 @@ In the second terminal, start the frontend:
 
 ```bash
 ./scripts/start-frontend.sh vulnerable-app
+```
+
+In the third terminal, run the smoke test:
+
+```bash
+./lab-preflight-and-smoke-test.sh --smoke-test
 ```
 
 Open the following address in a browser that can reach the VM:
