@@ -101,7 +101,7 @@ If Python tooling is not installed, an administrator runs this command once:
 
 ```bash
 chmod +x lab-preflight-and-smoke-test.sh
-./lab-preflight-and-smoke-test.sh
+./lab-preflight-and-smoke-test.sh --install-only
 ```
 
 All application commands should run as a normal user. Do not run the Flask
@@ -113,6 +113,10 @@ Make the helper scripts executable:
 
 ```bash
 chmod +x scripts/*.sh
+Terminal1 - ./scripts/start-backend.sh vulnerable-app
+Terminal2 - ./scripts/start-frontend.sh vulnerable-app
+Terminal3 - ./lab-preflight-and-smoke-test.sh --smoke-test
+
 ```
 
 In the first terminal, start the Flask backend:
