@@ -96,7 +96,7 @@ All included credentials and keys are fake training values.
 - IBM Bob with access to the extracted project
 - Three terminal sessions
 
-If Python tooling is not installed, an administrator runs this command once:
+Run to make sure, all prereqs are in place:
 
 ```bash
 chmod +x lab-preflight-and-smoke-test.sh
