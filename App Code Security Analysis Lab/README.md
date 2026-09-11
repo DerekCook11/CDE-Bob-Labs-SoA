@@ -100,6 +100,8 @@ All included credentials and keys are fake training values.
 If Python tooling is not installed, an administrator runs this command once:
 
 ```bash
+chmod +x lab-preflight-and-smoke-test.sh
+./lab-preflight-and-smoke-test.sh
 sudo dnf install -y python3 python3-pip
 ```
 
