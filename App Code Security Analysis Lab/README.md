@@ -222,6 +222,25 @@ Generate a report in interactive HTML, so a user knows what was done from start 
 
 ## Run and verify the secured version
 
+> **What happened before this section**
+>
+> IBM Bob analyzed the intentionally vulnerable baseline and modified only
+> `secure-app/`. Bob moved hardcoded secrets into environment variables,
+> parameterized the database search query, replaced unsafe HTML rendering,
+> added API input validation, protected sensitive error details, disabled debug
+> mode, restricted CORS, and removed secret exposure from administrative
+> responses. The original `vulnerable-app/` remains unchanged for comparison.
+>
+> **What you will verify now**
+>
+> In this section, you will configure and start Bob's secured version, confirm
+> that the application still works, run functional and security regression
+> tests, verify all six intended security fixes, and compare the secured code
+> with the preserved baseline.
+>
+> This section does not perform the security remediation. It validates the
+> changes Bob completed during Agent Mode.
+
 Complete this section only after Bob has finished modifying `secure-app/`.
 
 ### 1. Stop the baseline application
