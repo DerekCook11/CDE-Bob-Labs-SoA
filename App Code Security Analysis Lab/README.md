@@ -6,8 +6,7 @@ coding changes, and verify that the findings have been resolved.
 
 The lab includes a working task-management application with a Flask backend,
 responsive HTML/JavaScript frontend, and local SQLite database. It is designed
-to run on Red Hat Enterprise Linux without PostgreSQL, Docker, Node.js, or
-cloud-service dependencies.
+to run on Red Hat Enterprise Linux.
 
 > **Security warning:** This project intentionally contains vulnerable code and
 > fake hardcoded credentials for educational purposes. Run it only in an
@@ -302,7 +301,7 @@ Code-Security-Analysis-Lab/
 
 The lab is complete when:
 
-- The vulnerable application starts without an external database.
+- The baseline application starts successfully and automatically creates a local SQLite database.
 - Normal functional tests pass before and after remediation.
 - Bob identifies the intended vulnerabilities with evidence and severity.
 - Bob modifies only `secure-app/`.
