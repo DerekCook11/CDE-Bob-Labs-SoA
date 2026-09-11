@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Intentionally vulnerable task application for an IBM Bob security lab.">
+  <title>Security Analysis Lab</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark" aria-hidden="true">B</div>
+    <div>
+      <p class="eyebrow">IBM BOB HANDS-ON LAB</p>
+      <h1>Security Analysis &amp; Code Fixes</h1>
+    </div>
+    <span class="training-badge">Training only</span>
+  </header>
+
+  <main>
+    <section class="lab-notice" aria-label="Training warning">
+      <strong>Intentionally vulnerable application</strong>
+      <span>Use only on a private lab system. Ask Bob to identify and remediate the weaknesses.</span>
+    </section>
+
+    <section class="workspace">
+      <div class="panel composer">
+        <p class="section-label">CREATE TASK</p>
+        <form id="task-form">
+          <label for="title">Title</label>
+          <input id="title" name="title" placeholder="What needs to be done?" autocomplete="off">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="4" placeholder="Add context for the task"></textarea>
+          <button class="primary" type="submit">Add task</button>
+        </form>
+        <div class="lab-flow">
+          <span>1&nbsp; Scan</span><span>2&nbsp; Plan</span><span>3&nbsp; Fix</span><span>4&nbsp; Verify</span>
+        </div>
+      </div>
+
+      <div class="panel task-panel">
+        <div class="task-heading">
+          <div>
+            <p class="section-label">TASK BOARD</p>
+            <h2>Remediation work</h2>
+          </div>
+          <span id="task-count" class="count">0 tasks</span>
+        </div>
+        <div class="search-row">
+          <label class="sr-only" for="search">Search tasks</label>
+          <input id="search" placeholder="Search tasks">
+          <button id="search-button" type="button">Search</button>
+          <button id="clear-button" class="quiet" type="button">Clear</button>
+        </div>
+        <div id="message" role="status" aria-live="polite"></div>
+        <div id="task-list" class="task-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <template id="empty-state">
+    <div class="empty-state">
+      <div class="empty-icon">✓</div>
+      <h3>No tasks found</h3>
+      <p>Create a task or clear the current search.</p>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
