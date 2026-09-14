@@ -2,7 +2,7 @@
 
 ## Overview
 
-This lab walks through using IBM Bob to provision a RHEL VM, create a Node.js REST API, containerize it, and deploy it with Ansible and Podman — all on a single local VM. Ansible manages every infrastructure and deployment step after the initial bootstrap; Bob generates all project files through natural-language prompts.
+This lab walks through using IBM Bob to create a Node.js REST API, containerize it, and deploy it with Ansible and Podman. All of this will be done on our single local RHEL VM. Ansible manages every infrastructure and deployment step after the initial bootstrap; Bob generates all project files through natural-language prompts.
 
 The student's job is to write effective prompts, understand what Bob creates, and observe why it was built that way.
 
@@ -16,17 +16,6 @@ By the end of this lab you will be able to:
 - Build and run a containerized application using Ansible and the `containers.podman` collection
 - Explain idempotency and demonstrate it by re-running a playbook
 
-## Lab Flow
-
-| Part | Bob Mode | What Gets Built | What It Proves |
-|---|---|---|---|
-| 1 | Agent | Ansible installed via `dnf` | Bootstrap; why Ansible cannot install itself |
-| 2 | ⚡ Ansible Developer | `nodejs` + `podman` roles, `playbooks/setup.yml` | Roles, composition, idempotency |
-| 3 | Agent | Express API in `app/` | Node.js install worked; app runs locally |
-| 4 | Agent | `app/Dockerfile` | Container fundamentals, layer caching |
-| 5 | ⚡ Ansible Developer | `deploy_app` role, `playbooks/deploy.yml` | Ansible as container lifecycle manager |
-| 6 | — | Verification, teardown | Definition of done; repeatability |
-
 ---
 
 ## Prerequisites
@@ -38,21 +27,8 @@ By the end of this lab you will be able to:
 
 ### Working Directory Convention
 
-All terminal commands in this lab are run from the `Ansible Lab/` directory — the project root. This is where `ansible.cfg` lives. If you run `ansible-playbook` from any other directory, Ansible will not find `ansible.cfg`, roles will not resolve, and the playbooks will fail.
+Whithin Bob, you will want to open the `Ansible Lab/` directory as your project root. This is so terminal commands and Bob actions are performed within this directory. Here your `ansible.cfg` lives. If you run `ansible-playbook` from any other directory, Ansible will not find `ansible.cfg`, roles will not resolve, and the playbooks will fail.
 
-Run this once at the start of the lab and keep it as your working directory:
-
-```bash
-cd "Ansible Lab"
-```
-
-You can verify you are in the right place at any time:
-
-```bash
-ansible --version
-```
-
-The output includes a `config file` line. If it shows the path to `ansible.cfg` inside this directory, you are in the right place. If it says `None`, you are in the wrong directory.
 
 ### Project Configuration Files
 
@@ -68,9 +44,7 @@ Two files in the project root configure how Ansible runs:
 
 **Objective:** Ansible is installed and `ansible --version` returns a version string.
 
-**Mode: Agent (default)**
-
-Ansible is the automation layer for everything that follows. It is the only tool you will install by hand. This is an intentional bootstrap: Ansible cannot use itself to install itself, so the first step is manual. After this, every dependency — Node.js, Podman, the `containers.podman` collection — is installed by Bob-generated Ansible roles.
+Ansible is the automation layer for everything that follows. It is the only tool you will install by hand. This is an intentional bootstrap: Ansible cannot use itself to install itself, so the first step is manual. After this, our dependencies, Node.js, Podman, the `containers.podman` collection are to be installed by Bob-generated Ansible roles.
 
 **Prompt:**
 
@@ -88,11 +62,6 @@ Install Ansible on this Red Hat Enterprise Linux machine using sudo dnf install 
 
 **Objective:** Node.js, npm, Podman, and the `containers.podman` collection are installed via two Ansible roles composed by a single playbook.
 
-**Mode: ⚡ Ansible Developer**
-
-Switch Bob to the `⚡ Ansible Developer` mode before continuing. This mode is tuned for Ansible development — it prefers fully-qualified module names, organizes work into roles, and explains the reasoning behind its choices.
-
-**To switch modes:** Open the mode selector in Bob and choose `⚡ Ansible Developer`.
 
 ### Ansible Roles
 
