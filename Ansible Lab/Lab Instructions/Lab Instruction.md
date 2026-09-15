@@ -50,11 +50,26 @@ Ansible is the automation layer for everything that follows. It is the only tool
 
 ```txt
 Install Ansible on this Red Hat Enterprise Linux machine using sudo dnf install -y ansible-core, then run ansible --version to confirm it installed successfully.
+
+Next, create the following two configuration files in the Ansible Lab/ project root:
+
+1. ansible.cfg with this exact content:
+[defaults]
+inventory = inventory.ini
+roles_path = ./roles
+stdout_callback = default
+interpreter_python = auto_silent
+
+2. inventory.ini with this exact content:
+[local]
+localhost ansible_connection=local
+
+Finally, run ansible --version again and confirm the config file line now points to ansible.cfg instead of None.
 ```
 
 **Note:** The package is `ansible-core`, not `ansible`. On RHEL 9, `ansible-core` is the supported package in the standard AppStream repository. It ships with only the built-in modules, which is intentional — it makes the explicit `containers.podman` collection install in Part 2 genuinely necessary, not a no-op.
 
-**What to observe:** The output of `ansible --version` will include a `config file` line that currently says `None`. That will change after Part 2 adds `ansible.cfg` to the project.
+**What to observe:** After creating `ansible.cfg`, the `config file` line in `ansible --version` output will point to the project's `ansible.cfg` instead of `None`. The `inventory.ini` file defines `localhost` with `ansible_connection=local`, which avoids SSH and keeps all automation targeting the local machine. Both files must exist before any playbook in Part 2 can run.
 
 ---
 
@@ -172,21 +187,13 @@ Read the PLAY RECAP at the bottom of the output. The `changed` count should be `
 
 This is idempotency: running the playbook again produces the same system state without making unnecessary changes. It is the property that makes Ansible safe to run repeatedly and the foundation of reliable automation.
 
-> **Troubleshooting:** If `changed` is not 0 on the second run, the most likely cause is a missing `creates:` guard on the collection install task. Ask Bob to add one.
-
 ---
 
 ## Part 3: Create and Run the Application
 
 **Objective:** A minimal Express API is running locally and responds to `curl http://localhost:3000/health`.
 
-**Mode: Agent (default)**
-
-Switch Bob back to the default Agent mode. The Ansible work for provisioning is complete; now you will use Bob to scaffold the application that will be containerized and deployed.
-
-**To switch modes:** Open the mode selector in Bob and choose **Agent**.
-
-The application is deliberately trivial — one endpoint, no middleware, no database. It is a vehicle for demonstrating the pipeline, not an application worth building. Keeping it minimal means any failure in Parts 4 or 5 is unambiguously an infrastructure problem, not an application problem.
+Now you will use Bob to scaffold the application that will be containerized and deployed. The application is deliberately trivial — one endpoint, no middleware, no database. It is a vehicle for demonstrating the pipeline, not an application worth building. Keeping it minimal means any failure in Parts 4 or 5 is unambiguously an infrastructure problem, not an application problem.
 
 ### Generate the Application
 
@@ -199,6 +206,8 @@ Create a minimal Node.js Express REST API in the app/ directory. Requirements:
 - package.json includes express as a dependency and a "start" script that runs node index.js.
 - .gitignore excludes node_modules/.
 No other dependencies, no middleware, no additional routes.
+
+You do not need to run the command to show that the applicaiton is running as this might cause the Chat to get caught on the application's execution.
 ```
 
 **Expected result:**
@@ -212,7 +221,7 @@ app/
 
 ### Run It Locally
 
-The Node.js installed by the `nodejs` role in Part 2 is what runs this application. Verify it works before moving on:
+The Node.js installed by the `nodejs` role in Part 2 is what runs this application. Verify it works before moving on. To do this within a terminal window enter the following commands:
 
 ```bash
 cd app
@@ -220,7 +229,7 @@ npm install
 npm start
 ```
 
-In a second terminal, from any directory:
+Now open a second terminal; on the top right of the terminal window there whould be a plus sign which will open a second terminal in place of your existing terminal. On the right side of the terminal window you will see a list of terminal sessions you can switch between at any time. Now from any directory run the command:
 
 ```bash
 curl http://localhost:3000/health
@@ -234,7 +243,7 @@ You should receive:
 
 **What to observe:** `node_modules/` appears in the `app/` directory after `npm install`. It is excluded by `.gitignore`. The `PORT` variable in `index.js` is why the container will be able to override the port without any code changes.
 
-Before continuing, stop the dev server and return to the project root:
+Before continuing, stop the dev server and return to the project root. To go back to your previous terminal session you will use the list on the right side of the terminal window and click on the sesssion with title "npm app":
 
 ```bash
 # In the terminal running npm start:
@@ -244,15 +253,11 @@ Ctrl+C
 cd ..
 ```
 
-Stopping the server is required. If `npm start` is still running when the container starts in Part 5, both will compete for port 3000 and the container will fail to bind.
-
 ---
 
 ## Part 4: Containerize the Application
 
-**Objective:** `app/Dockerfile` exists and describes how to build a container image for the Express API.
-
-**Mode: Agent (default)**
+**Objective:** create an `app/Dockerfile` which describes how to build a container image for the Express API.
 
 A **container image** is a portable, self-contained package: the application, its runtime, and its dependencies, bundled together so it runs identically on any host with a container runtime. A **Dockerfile** is the recipe for building that image — a sequence of instructions specifying what to include and how to configure the container.
 
@@ -289,19 +294,13 @@ The ordering of `COPY package*.json` → `RUN npm install` → `COPY . .` is the
 
 `EXPOSE` is documentation only. It does not publish port 3000 on the host. Publishing happens at container run time, via the port mapping in the Ansible role in Part 5.
 
-**What to observe:** The Dockerfile Bob generates should follow the layer-ordering pattern above. If it copies all source files before running `npm install`, ask Bob to fix the ordering and explain why.
+**What to observe:** The Dockerfile Bob generates should follow the layer-ordering pattern above.
 
 ---
 
 ## Part 5: Deploy with Ansible
 
-**Objective:** The containerized API is running on Podman, deployed and managed by Ansible. `curl http://localhost:3000/health` returns `{"status":"ok"}`.
-
-**Mode: ⚡ Ansible Developer**
-
-Switch Bob back to `⚡ Ansible Developer` mode. The application and container work is done; the remaining task is deployment automation.
-
-**To switch modes:** Open the mode selector in Bob and choose **⚡ Ansible Developer**.
+**Objective:** The containerized API is running on Podman, deployed and managed by Ansible.
 
 Following the same roles pattern from Part 2, you will create a `deploy_app` role and a thin `playbooks/deploy.yml` that calls it. The `containers.podman` collection installed in Part 2 provides modules that manage container state declaratively — you describe what you want (an image built, a container running) and Ansible determines what actions are needed to get there.
 
@@ -315,7 +314,7 @@ The `deploy_app` role needs to know where the `app/` directory is so it can find
 
 ```txt
 Using Ansible Developer best practices, create an Ansible role named deploy_app under roles/deploy_app/. Requirements:
-- defaults/main.yml defines: app_image_name: my-api, app_image_tag: latest, app_src_path: "{{ playbook_dir | dirname }}/app", container_name: my-api, host_port: 3000, container_port: 3000.
+- defaults/main.yml defines: app_image_name: my-api, app_image_tag: latest, app_src_path: "{{ playbook_dir | dirname }}/app", container_name: my-api, host_port: 8080, container_port: 3000.
 - tasks/main.yml uses containers.podman.podman_image to build the image from the app_src_path directory with name "{{ app_image_name }}" and tag "{{ app_image_tag }}", state: present.
 - tasks/main.yml uses containers.podman.podman_container with name "{{ container_name }}", image "{{ app_image_name }}:{{ app_image_tag }}", state: started, ports: ["{{ host_port }}:{{ container_port }}"], recreate: true.
 - No become on any task — the container runs rootless as the current user.
@@ -353,7 +352,7 @@ Run ansible-playbook playbooks/deploy.yml from the Ansible Lab directory and con
 **What to observe:**
 
 1. The `podman_image` task builds the image from `app/Dockerfile`. On first run, the base image is pulled from the internet — this may take a minute.
-2. The `podman_container` task starts the container and maps port 3000.
+2. The `podman_container` task starts the container and maps port 8080.
 
 Confirm the container is running:
 
@@ -361,12 +360,12 @@ Confirm the container is running:
 podman ps
 ```
 
-The output should show `my-api` with `0.0.0.0:3000->3000/tcp` in the ports column.
+The output should show `my-api` with `0.0.0.0:8080->3000/tcp` in the ports column.
 
 Test the API:
 
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:8080/health
 ```
 
 Expected response:
@@ -389,8 +388,8 @@ All commands are run from `Ansible Lab/`.
 | Collection installed | `ansible-galaxy collection list containers.podman` | Collection listed with version |
 | App files present | `ls app/` | `index.js`, `package.json`, `Dockerfile`, `.gitignore` |
 | Image built | `podman images` | `my-api` image listed |
-| Container running | `podman ps` | `my-api` with `0.0.0.0:3000->3000/tcp` |
-| API responding | `curl http://localhost:3000/health` | `{"status":"ok"}` |
+| Container running | `podman ps` | `my-api` with `0.0.0.0:8080->3000/tcp` |
+| API responding | `curl http://localhost:8080/health` | `{"status":"ok"}` |
 
 If the API does not respond, check the container logs:
 
@@ -414,30 +413,6 @@ podman rm my-api
 podman rmi my-api:latest
 ```
 
-To also remove installed Node.js modules:
-
-```bash
-rm -rf app/node_modules
-```
-
 ### Stretch Exercise
 
 Ask Bob to generate a `playbooks/teardown.yml` that removes the container using `containers.podman.podman_container` with `state: absent` and removes the image using `containers.podman.podman_image` with `state: absent`. This is a good self-directed exercise that reinforces declarative state management — absence is a state, not just the default.
-
----
-
-## Troubleshooting
-
-| Symptom | Likely Cause | Fix |
-|---|---|---|
-| `couldn't resolve module/action 'containers.podman.podman_image'` | Collection installed as root, invisible to current user | Re-run the Part 2 collection task with `become: false`; verify with `ansible-galaxy collection list` |
-| `the role 'nodejs' was not found` (or `podman`, `deploy_app`) | Running `ansible-playbook` from outside the project root; `ansible.cfg` not loaded | `cd` to `Ansible Lab/`; confirm with `ansible --version` — `config file` must not be `None` |
-| `port is already allocated` or `address already in use` | The Part 3 dev server is still running, or a container from a previous run exists | Ctrl+C the dev server; run `podman ps -a`, then `podman stop my-api && podman rm my-api` |
-| `No package ansible-core available` | Wrong repository or package name | Confirm `dnf repolist` includes AppStream; try `sudo dnf install -y ansible-core` |
-| `curl: (7) Failed to connect` | Container exited on startup | `podman logs my-api` to see the error |
-| Second playbook run still shows `changed` on the collection task | Missing `creates:` guard on the collection install task | Ask Bob to add `creates: "{{ ansible_env.HOME }}/.ansible/collections/ansible_collections/containers/podman"` to that task |
-
-**General diagnostics:**
-
-- Add `-v` to any `ansible-playbook` command for more detail.
-- `ansible --version` is the fastest way to confirm you are in the right directory — the `config file` line tells you exactly which `ansible.cfg` is in use.
