@@ -1,0 +1,603 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IBM Bob Lab — SDLC Automation with Bob</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #1f2328;
+    background: #ffffff;
+    padding: 0 0 56px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: #0f1624;
+    color: #ffffff;
+    padding: 48px 24px 40px;
+    text-align: center;
+  }
+  .hero .publisher {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #60a5fa;
+    margin-bottom: 10px;
+  }
+  .hero h1 {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin-bottom: 12px;
+    color: #ffffff;
+  }
+  .hero p {
+    font-size: 14px;
+    color: #94a3b8;
+    max-width: 540px;
+    margin: 0 auto 24px;
+  }
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    font-size: 12px;
+    color: #64748b;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 5px; }
+
+  /* ── Step nav ── */
+  .step-nav {
+    background: #1e293b;
+    padding: 0 24px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+    border-bottom: 1px solid #334155;
+  }
+  .step-nav a {
+    display: inline-block;
+    padding: 12px 18px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    transition: color .15s, border-color .15s;
+  }
+  .step-nav a:hover { color: #60a5fa; border-bottom-color: #60a5fa; }
+
+  /* ── Page body ── */
+  .page { max-width: 760px; margin: 0 auto; padding: 36px 20px; }
+
+  /* ── Section headings ── */
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2328;
+    margin: 36px 0 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  h2:first-child { margin-top: 0; }
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2328;
+    margin: 22px 0 8px;
+  }
+  h4 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #57606a;
+    margin: 18px 0 6px;
+  }
+
+  p { font-size: 13.5px; color: #1f2328; margin-bottom: 10px; }
+  a { color: #3b82d4; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Experience cards ── */
+  .exp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 14px 0;
+  }
+  .exp-card {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-top: 3px solid #3b82d4;
+    border-radius: 6px;
+    padding: 14px 14px 12px;
+  }
+  .exp-card .label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #3b82d4;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .exp-card p { font-size: 12.5px; color: #57606a; margin: 0; }
+
+  /* ── Time + download banner ── */
+  .info-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin: 16px 0;
+  }
+  .time-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #166534;
+  }
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #3b82d4;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 5px;
+    text-decoration: none;
+  }
+  .download-btn:hover { background: #2563eb; text-decoration: none; color: #fff; }
+
+  /* ── Step sections ── */
+  .step-section {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin: 24px 0;
+    overflow: hidden;
+  }
+  .step-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: #f7f8fa;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #3b82d4;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .step-head-text h3 { margin: 0 0 2px; font-size: 16px; }
+  .step-head-text .sub-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #57606a;
+  }
+  .step-body { padding: 18px 20px; }
+
+  /* ── Challenge box ── */
+  .challenge {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-left: 3px solid #f97316;
+    border-radius: 4px;
+    padding: 11px 14px;
+    font-size: 13px;
+    color: #7c2d12;
+    margin-bottom: 16px;
+  }
+  .challenge strong { color: #9a3412; display: block; margin-bottom: 3px; }
+
+  /* ── Prompt block ── */
+  .prompt-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #7c5cd8;
+    margin: 14px 0 4px;
+  }
+  .prompt-block {
+    background: #faf5ff;
+    border: 1px solid #e9d5ff;
+    border-left: 3px solid #7c5cd8;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12.5px;
+    color: #3730a3;
+    white-space: pre-wrap;
+    line-height: 1.65;
+    margin-bottom: 14px;
+  }
+
+  /* ── Result panels ── */
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+  }
+  @media (max-width: 540px) { .result-grid { grid-template-columns: 1fr; } }
+  .result-panel {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 5px;
+    padding: 12px 14px;
+  }
+  .result-panel h5 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #57606a;
+    margin-bottom: 8px;
+  }
+  .result-panel ul { padding-left: 16px; font-size: 13px; color: #1f2328; }
+  .result-panel li { margin-bottom: 4px; }
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+
+  /* ── Severity badges ── */
+  .finding { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; font-size: 13px; }
+  .sev {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .sev.high   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+  .sev.medium { background: #fff7ed; color: #92400e; border: 1px solid #fdba74; }
+  .sev.low    { background: #f7f8fa; color: #57606a; border: 1px solid #e5e7eb; }
+
+  /* ── Completion section ── */
+  .completion {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 24px 22px;
+    margin: 28px 0;
+  }
+  .completion h2 { border-bottom-color: #bbf7d0; color: #14532d; margin-top: 0; }
+  .completion ol { padding-left: 20px; font-size: 13.5px; color: #14532d; }
+  .completion li { margin-bottom: 6px; }
+
+  /* ── Links section ── */
+  .links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .link-card {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 5px;
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  .link-card .lc-title { font-weight: 700; color: #1f2328; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .link-card a { display: block; color: #3b82d4; font-size: 13px; margin-bottom: 3px; }
+
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 28px 0; }
+
+  /* ── Footer ── */
+  .site-footer {
+    margin-top: 40px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 12px;
+    color: #8b949e;
+  }
+  .site-footer p { color: #8b949e; font-size: 12px; margin-bottom: 6px; }
+  .site-footer .legal-links { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 6px; }
+  .site-footer .legal-links a { color: #8b949e; font-size: 12px; }
+</style>
+</head>
+<body>
+
+  
+  <div class="hero">
+    <div class="publisher">IBM Corporation · Bob Lab</div>
+    <h1>SDLC Automation with Bob</h1>
+    <p>Accelerate your Software Development Lifecycle — learn how Bob automates code understanding, review, testing, and deployment integration.</p>
+    <div class="hero-meta">
+      <span>🕒 3 min read</span>
+      <span>⚙️ 720 words</span>
+      <span>🌐 English</span>
+    </div>
+  </div>
+
+  
+  <nav class="step-nav">
+    <a href="#overview">Overview</a>
+    <a href="#code-understanding">Code Understanding</a>
+    <a href="#code-review">Code Review</a>
+    <a href="#iterative-fixes">Iterative Fixes</a>
+    <a href="#testing">Test Generation</a>
+  </nav>
+
+  <div class="page">
+
+    
+    <h2 id="overview">What You'll Experience</h2>
+    <p>This walkthrough demonstrates Bob's SDLC automation capabilities through a realistic scenario: taking an existing codebase and automating the entire development lifecycle from understanding to deployment.</p>
+
+    <div class="exp-grid">
+      <div class="exp-card">
+        <div class="label">Code Understanding</div>
+        <p>Bob analyzes your codebase and generates comprehensive documentation</p>
+      </div>
+      <div class="exp-card">
+        <div class="label">Code Review</div>
+        <p>Automated review with actionable suggestions for improvements</p>
+      </div>
+      <div class="exp-card">
+        <div class="label">Iterative Fixes</div>
+        <p>Bob applies fixes iteratively until code quality standards are met</p>
+      </div>
+      <div class="exp-card">
+        <div class="label">Test Generation</div>
+        <p>Creates comprehensive test suites and validates functionality</p>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <span class="time-badge">⏰ Estimated time: 15–20 minutes</span>
+    </div>
+
+    <h3>Download Sample Application</h3>
+    <p>Get the ModResorts WebSphere Traditional (tWAS) Java 8 application to follow along:</p>
+    <div style="margin:10px 0 4px">
+      <a class="download-btn" href="https://bob-lab-app.29szhis02s11.au-syd.codeengine.appdomain.cloud/samples/modresorts-twas-j8.zip">⭳ Download modresorts-twas-j8.zip</a>
+    </div>
+
+    <hr />
+
+    
+    <div class="step-section" id="code-understanding">
+      <div class="step-head">
+        <span class="step-num">1</span>
+        <div class="step-head-text">
+          <div class="sub-label">AI-Powered Analysis</div>
+          <h3>Code Understanding &amp; Documentation</h3>
+        </div>
+      </div>
+      <div class="step-body">
+        <div class="challenge">
+          <strong>The Challenge</strong>
+          Understanding unfamiliar codebases is time-consuming. Developers spend days reading code, tracing dependencies, and understanding business logic before they can contribute effectively.
+        </div>
+
+        <h4>Step 1 — Provide Your Codebase</h4>
+        <p>Point Bob to your repository or upload your code. For this lab, we'll use the ModResorts sample application — a WebSphere Application Server Traditional (tWAS) Java 8 application with servlets, JSP views, JMX MBeans, and JDBC connections.</p>
+
+        <h4>Step 2 — Ask Bob to Analyze and Document</h4>
+        <div class="prompt-label">Bob Prompt</div>
+        <div class="prompt-block">Analyze this codebase and generate documentation including:
+- High-level architecture overview
+- Component responsibilities and interactions
+- Data flow and API endpoints
+- Key business logic and algorithms
+- Dependencies and external integrations
+- Setup and configuration instructions</div>
+
+        <h4>Step 3 — Review Generated Documentation</h4>
+        <p>Bob creates comprehensive documentation across four areas:</p>
+
+        <div class="result-grid">
+          <div class="result-panel">
+            <h5>Architecture Overview</h5>
+            <ul>
+              <li>J2EE monolithic application with servlet-based architecture</li>
+              <li>WebSphere Application Server Traditional (tWAS) runtime</li>
+              <li>JMX MBeans for management and monitoring</li>
+              <li>Custom security implementations and filters</li>
+            </ul>
+          </div>
+          <div class="result-panel">
+            <h5>Key Components</h5>
+            <ul>
+              <li><code>servlets/</code> — WelcomeServlet, WeatherServlet, AvailabilityCheckerServlet</li>
+              <li><code>filters/</code> — FirstFilter, SecondFilter for request processing</li>
+              <li><code>mbean/</code> — JMX beans for reservation management and app info</li>
+              <li><code>security/</code> — Custom permission handling and SSL utilities</li>
+              <li><code>db/</code> — Customer information and data access layer</li>
+            </ul>
+          </div>
+          <div class="result-panel">
+            <h5>Generated Files</h5>
+            <ul>
+              <li><code>README.md</code> — Project overview and quick start</li>
+              <li><code>ARCHITECTURE.md</code> — Detailed system design</li>
+              <li><code>API.md</code> — Servlet endpoints documentation</li>
+              <li><code>SETUP.md</code> — WebSphere setup guide</li>
+            </ul>
+          </div>
+          <div class="result-panel">
+            <h5>What Bob Saves You</h5>
+            <ul>
+              <li>Days of manual codebase reading</li>
+              <li>Architecture diagrams on demand</li>
+              <li>Dependency tracing — automated</li>
+              <li>Onboarding docs for new team members</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="step-section" id="code-review">
+      <div class="step-head">
+        <span class="step-num">2</span>
+        <div class="step-head-text">
+          <div class="sub-label">Quality Assurance</div>
+          <h3>Automated Code Review</h3>
+        </div>
+      </div>
+      <div class="step-body">
+        <div class="challenge">
+          <strong>The Challenge</strong>
+          Manual code review is time-consuming and inconsistent. Teams struggle to maintain code quality standards across large codebases.
+        </div>
+
+        <h4>Request Code Review</h4>
+        <div class="prompt-label">Bob Prompt</div>
+        <div class="prompt-block">Review the codebase for:
+- Code quality issues and anti-patterns
+- Security vulnerabilities
+- Performance bottlenecks
+- Maintainability concerns
+- Best practice violations
+
+Provide specific recommendations with code examples.</div>
+
+        <h4>Review Findings</h4>
+        <p>Bob provides detailed analysis with severity ratings:</p>
+
+        <div style="margin-top:10px">
+          <div class="finding">
+            <span class="sev high">High</span>
+            <span>SQL injection vulnerability in query building</span>
+          </div>
+          <div class="finding">
+            <span class="sev high">High</span>
+            <span>Hardcoded credentials in configuration</span>
+          </div>
+          <div class="finding">
+            <span class="sev medium">Medium</span>
+            <span>Resource leaks in database connections</span>
+          </div>
+          <div class="finding">
+            <span class="sev medium">Medium</span>
+            <span>Deprecated API usage</span>
+          </div>
+          <div class="finding">
+            <span class="sev low">Low</span>
+            <span>Missing JavaDoc comments</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="step-section" id="iterative-fixes">
+      <div class="step-head">
+        <span class="step-num">3</span>
+        <div class="step-head-text">
+          <div class="sub-label">AI-Powered Refactoring</div>
+          <h3>Iterative Fixes</h3>
+        </div>
+      </div>
+      <div class="step-body">
+        <p>Bob applies fixes iteratively until code quality standards are met — addressing each finding from the code review with targeted changes, validating that each fix doesn't introduce regressions, and re-reviewing until all issues are resolved.</p>
+        <p>Continue this step in the full lab: <a href="https://bob-lab-app.29szhis02s11.au-syd.codeengine.appdomain.cloud/labs/sdlc#code-fixes">Open Iterative Fixes Lab →</a></p>
+      </div>
+    </div>
+
+    <div class="step-section" id="testing">
+      <div class="step-head">
+        <span class="step-num">4</span>
+        <div class="step-head-text">
+          <div class="sub-label">Coverage Automation</div>
+          <h3>Test Generation</h3>
+        </div>
+      </div>
+      <div class="step-body">
+        <p>Bob creates comprehensive test suites and validates functionality — generating unit tests, integration tests, and edge-case coverage for each component with minimal developer effort.</p>
+        <p>Continue this step in the full lab: <a href="https://bob-lab-app.29szhis02s11.au-syd.codeengine.appdomain.cloud/labs/sdlc#testing">Open Test Generation Lab →</a></p>
+      </div>
+    </div>
+
+    <hr />
+
+    
+    <div class="completion">
+      <h2>✅ SDLC Automation Complete!</h2>
+      <p style="color:#14532d;font-size:13.5px;margin-bottom:14px">You've experienced how Bob automates the entire software development lifecycle from code understanding to deployment.</p>
+      <h3 style="color:#14532d;font-size:14px;margin-bottom:10px">Key Takeaways</h3>
+      <ol>
+        <li><strong>Code Understanding:</strong> Bob generates comprehensive documentation in minutes</li>
+        <li><strong>Code Review:</strong> Automated analysis finds issues that humans might miss</li>
+        <li><strong>Iterative Fixes:</strong> AI-powered refactoring with safety checks</li>
+        <li><strong>Test Generation:</strong> Comprehensive test coverage with minimal effort</li>
+      </ol>
+    </div>
+
+    
+    <h2>Resources &amp; Links</h2>
+    <div class="links-grid">
+      <div class="link-card">
+        <div class="lc-title">Bob Lab</div>
+        <a href="https://bob-lab-app.29szhis02s11.au-syd.codeengine.appdomain.cloud/">Home</a>
+        <a href="https://bob-lab-app.29szhis02s11.au-syd.codeengine.appdomain.cloud/labs/getting-started">Getting Started</a>
+        <a href="https://bob-lab-app.29szhis02s11.au-syd.codeengine.appdomain.cloud/labs/sdlc#overview">SDLC Lab</a>
+      </div>
+      <div class="link-card">
+        <div class="lc-title">Resources</div>
+        <a href="https://bob.ibm.com/">IBM Bob</a>
+        <a href="https://github.com/ibm">GitHub — IBM</a>
+      </div>
+      <div class="link-card">
+        <div class="lc-title">Sample App</div>
+        <a href="https://bob-lab-app.29szhis02s11.au-syd.codeengine.appdomain.cloud/samples/modresorts-twas-j8.zip">Download modresorts-twas-j8.zip</a>
+      </div>
+    </div>
+
+    
+    <div class="site-footer">
+      <p>© 2026 IBM Corporation. All rights reserved.</p>
+      <div class="legal-links">
+        <a href="https://www.ibm.com/privacy">Privacy</a>
+        <a href="https://www.ibm.com/legal">Terms of Use</a>
+        <a href="https://www.ibm.com/accessibility">Accessibility</a>
+      </div>
+      <p style="margin-top:12px">Made with IBM Bob</p>
+    </div>
+
+  </div>
+
+</body>
+</html>
