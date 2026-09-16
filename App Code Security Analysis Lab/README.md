@@ -15,15 +15,14 @@ to run on Red Hat Enterprise Linux.
 
 ## Download
 
-Download the complete project package:
-
-[Code-Security-Analysis-Lab.zip](./Code-Security-Analysis-Lab.zip)
-
-After downloading or cloning this repository, extract the ZIP file:
-
+In your terminal home directory (it will download all labs)
 ```bash
-unzip Code-Security-Analysis-Lab.zip
-cd Code-Security-Analysis-Lab
+git clone https://github.com/DerekCook11/CDE-Bob-Labs-SoA.git
+```
+
+For this current lab, go to this directory
+```bash
+cd "CDE-Bob-Labs-SoA/App Code Security Analysis Lab"
 ```
 
 ## Learning objectives
