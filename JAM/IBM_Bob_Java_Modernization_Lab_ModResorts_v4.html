@@ -37,7 +37,7 @@ function expandAll(){document.querySelectorAll('details').forEach(d=>d.open=true
 <div class="actions"><button class="primary" onclick="window.print()">Print / Save PDF</button><button class="secondary" onclick="expandAll()">Expand All</button><button class="secondary" onclick="collapseAll()">Collapse All</button></div></div></header>
 <div class="layout"><aside><h3>Lab Navigation</h3><a href="#overview">Modernize ModResorts Without Re-Architecting It</a>
 <a href="#objectives">What Participants Will Do</a>
-<a href="#scope">Keep the Modernization Simple</a>
+<a href="#scope">App Modernization</a>
 <a href="#prereq">Step 0: Prerequisites & Preflight</a>
 <a href="#step1">Step 1: Import the Legacy Application</a>
 <a href="#step2">Step 2: Codebase Review & Analysis</a>
@@ -88,7 +88,7 @@ ModResorts Monolith
 <li>Generate modernization documentation.</li>
 </ul>
 </section>
-<section class="card" id="scope"><div class="kicker">Scope Guardrails</div><h2>Keep the Modernization Simple</h2>
+<section class="card" id="scope"><div class="kicker">Scope Guardrails</div><h2>App Modernization</h2>
 <table><tr><th>Included</th><th>Not Included</th></tr>
 <tr><td>Java 8 → Java 17</td><td>Monolith → Microservices</td></tr>
 <tr><td>Traditional WebSphere → Open Liberty</td><td>JSP → React</td></tr>
@@ -130,7 +130,7 @@ ModResorts Monolith
 
 <div class="callout success">
 <b>File:</b> <code>modresorts-lab-prereq.sh</code><br>
-<a href="modresorts-lab-prereq.sh" download>Download prerequisite script</a>
+<a href="modresorts-lab-prereq.sh" download>Download prerequisite script and run "chmod +x modresorts-lab-prereq.sh"</a>
 </div>
 
 <p>If the HTML file and script are distributed together, keep both files in the same directory so the download link above works.</p>
