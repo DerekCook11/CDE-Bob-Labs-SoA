@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>IBM Bob Java Modernization Lab - ModResorts</title>
+<style>
+:root{--navy:#0f172a;--blue:#0ea5e9;--green:#16a34a;--amber:#d97706;--border:#dbe3ee;--text:#172033;--bg:#f8fafc}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);background:var(--bg);line-height:1.58}
+header{background:linear-gradient(135deg,#0f172a,#1d4ed8);color:#fff;padding:28px;position:sticky;top:0;z-index:20;box-shadow:0 3px 18px #0003}
+.header-inner{max-width:1500px;margin:auto} header h1{margin:0;font-size:30px} header p{margin:5px 0;color:#dbeafe}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px} button{border:0;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer}
+.primary{background:#38bdf8;color:#082f49} .secondary{background:#ffffff22;color:#fff;border:1px solid #ffffff44}
+.layout{max-width:1500px;margin:auto;padding:24px;display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px}
+aside{position:sticky;top:150px;align-self:start;max-height:calc(100vh - 175px);overflow:auto;background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px}
+aside h3{margin:0 0 10px;font-size:14px;text-transform:uppercase;color:#475569} aside a{display:block;padding:6px 8px;color:#334155;text-decoration:none;border-radius:6px;font-size:13px}
+aside a:hover{background:#e0f2fe;color:#075985}
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:22px;box-shadow:0 4px 18px #0f172a0d}
+.card h2{margin-top:0;color:#0f172a} .kicker{display:inline-block;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#0369a1;background:#e0f2fe;padding:5px 8px;border-radius:999px;margin-bottom:10px}
+.callout{border-left:5px solid var(--blue);background:#f0f9ff;padding:14px 16px;border-radius:9px;margin:14px 0} .success{border-color:var(--green);background:#ecfdf5} .warn{border-color:var(--amber);background:#fff7ed}
+.flow{background:#0f172a;color:#e2e8f0;padding:18px;border-radius:11px;font-family:ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow:auto}
+.label{font-weight:800;margin:18px 0 7px} pre{position:relative;background:#020617;color:#e2e8f0;padding:16px;border-radius:11px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+code{font-family:ui-monospace,Consolas,monospace} .copy{position:absolute;right:9px;top:9px;background:#1e293b;color:#fff;border:1px solid #475569;padding:5px 9px;font-size:11px}
+table{width:100%;border-collapse:collapse;margin:14px 0} th,td{border:1px solid #dce6f1;padding:10px;vertical-align:top;text-align:left} th{background:#eaf4fb}
+details{border:1px solid var(--border);border-radius:10px;margin:12px 0} summary{cursor:pointer;font-weight:800;padding:12px 14px} details>div{padding:0 14px 14px}
+footer{max-width:1500px;margin:auto;padding:0 24px 32px;color:#64748b}
+@media(max-width:950px){.layout{grid-template-columns:1fr} aside{position:static;max-height:none}}
+@media print{header{position:static;background:white!important;color:#000!important;box-shadow:none} header p{color:#333} .actions,aside,.copy{display:none!important} .layout{display:block;padding:0} .card{box-shadow:none;border:0;border-bottom:1px solid #bbb;border-radius:0} pre,.flow{background:#f5f5f5!important;color:#000!important;border:1px solid #aaa}}
+</style>
+<script>
+function copyBlock(btn){const p=btn.parentElement.cloneNode(true);const b=p.querySelector('.copy');if(b)b.remove();navigator.clipboard.writeText(p.innerText.trim());btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy',1200)}
+function expandAll(){document.querySelectorAll('details').forEach(d=>d.open=true)} function collapseAll(){document.querySelectorAll('details').forEach(d=>d.open=false)}
+</script></head>
+<body>
+<header><div class="header-inner"><h1>IBM Bob Java Modernization Lab</h1><p>ModResorts: Java 8 + Traditional WebSphere → Java 17 + Open Liberty</p>
+<div class="actions"><button class="primary" onclick="window.print()">Print / Save PDF</button><button class="secondary" onclick="expandAll()">Expand All</button><button class="secondary" onclick="collapseAll()">Collapse All</button></div></div></header>
+<div class="layout"><aside><h3>Lab Navigation</h3><a href="#overview">Modernize ModResorts Without Re-Architecting It</a>
+<a href="#objectives">What Participants Will Do</a>
+<a href="#scope">App Modernization</a>
+<a href="#prereq">Step 0: Prerequisites & Preflight</a>
+<a href="#step1">Step 1: Import the Legacy Application</a>
+<a href="#step2">Step 2: Codebase Review & Analysis</a>
+<a href="#step3">Step 3: Define Modernization Requirements</a>
+<a href="#step4">Step 4: Review the Modernization Plan</a>
+<a href="#step5">Step 5: Automated Code Transformation</a>
+<a href="#step6">Step 6: Build the Modernized Application</a>
+<a href="#step7">Step 7: Automated Testing & Quality Assurance</a>
+<a href="#step8">Step 8: Run Tests & Fix Issues</a>
+<a href="#step9">Step 9: Review Code Coverage</a>
+<a href="#step10">Step 10: Run on Open Liberty</a>
+<a href="#step11">Step 11: Verify the Modernized Application</a>
+<a href="#step12">Step 12: Automated Documentation Generation</a>
+<a href="#architecture">Target State</a>
+<a href="#criteria">When the Lab Is Complete</a></aside><main><section class="card" id="overview"><div class="kicker">Workshop Overview</div><h2>Modernize ModResorts Without Re-Architecting It</h2>
+<p>You are given the legacy application <code>modresorts-twas-j8.zip</code>.</p>
+<p>The goal is to use IBM Bob to modernize the supporting Java/WebSphere stack while preserving the application as a monolith.</p>
+<div class="flow">BEFORE
+ModResorts Monolith
+  ├─ Java 8
+  ├─ Java EE
+  ├─ Traditional WebSphere APIs
+  ├─ was_public dependency
+  └─ Traditional WebSphere assumptions
+
+        ↓
+
+AFTER
+ModResorts Monolith
+  ├─ Java 17
+  ├─ Standard Java / Servlet / JNDI APIs
+  ├─ No required was_public dependency
+  ├─ Open Liberty
+  └─ Existing application behavior preserved</div>
+<div class="callout success"><b>Workshop principle:</b> Same application, modern foundation.</div>
+</section>
+<section class="card" id="objectives"><div class="kicker">Lab Objectives</div><h2>What Participants Will Do</h2>
+<ul>
+<li>Analyze the legacy application and architecture.</li>
+<li>Identify WebSphere-specific APIs and dependencies.</li>
+<li>Create and review a modernization plan.</li>
+<li>Modernize the application from Java 8 to Java 17.</li>
+<li>Remove unnecessary traditional WebSphere dependencies.</li>
+<li>Build the application successfully as a WAR.</li>
+<li>Create automated tests and measure code coverage.</li>
+<li>Run the application locally on Open Liberty.</li>
+<li>Verify <code>/resorts</code> still works.</li>
+<li>Generate modernization documentation.</li>
+</ul>
+</section>
+<section class="card" id="scope"><div class="kicker">Scope Guardrails</div><h2>App Modernization</h2>
+<table><tr><th>Included</th><th>Not Included</th></tr>
+<tr><td>Java 8 → Java 17</td><td>Monolith → Microservices</td></tr>
+<tr><td>Traditional WebSphere → Open Liberty</td><td>JSP → React</td></tr>
+<tr><td>WebSphere APIs → Portable APIs</td><td>Database migration</td></tr>
+<tr><td>Maven updates / WAR build</td><td>Kubernetes / OpenShift</td></tr>
+<tr><td>Automated tests / JaCoCo</td><td>CI/CD</td></tr>
+<tr><td>Local Liberty runtime</td><td>Business-logic redesign</td></tr></table>
+</section>
+
+<section class="card" id="prereq">
+<div class="kicker">Step 0</div>
+<h2>Lab Environment Prerequisites & Preflight</h2>
+
+<p>Before starting the modernization lab, prepare the Red Hat Linux VM with the required Java, Maven, operating-system utilities, network access, and Liberty port availability.</p>
+
+<div class="callout">
+<b>Assumption:</b> IBM Bob is already installed and accessible on the VM. The prerequisite script prepares the supporting lab environment only.
+</div>
+
+<h3>Required Baseline</h3>
+
+<table>
+<tr><th>Dependency</th><th>Purpose</th><th>Requirement</th></tr>
+<tr><td>Red Hat Enterprise Linux</td><td>Workshop VM operating system</td><td>RHEL-family VM with <code>dnf</code></td></tr>
+<tr><td>Java 17 JDK</td><td>Compile and run the modernized application</td><td><code>java-17-openjdk-devel</code></td></tr>
+<tr><td>Maven</td><td>Build, test, JaCoCo, and Liberty Maven plugin</td><td>&gt;= 3.8.6; recommended 3.9.16</td></tr>
+<tr><td>curl</td><td>Connectivity checks and downloads</td><td>Required</td></tr>
+<tr><td>unzip</td><td>Extract <code>modresorts-twas-j8.zip</code></td><td>Required</td></tr>
+<tr><td>git</td><td>Source/project management</td><td>Recommended</td></tr>
+<tr><td>tar / gzip</td><td>Maven installation</td><td>Required when Maven is upgraded</td></tr>
+<tr><td>Outbound HTTPS</td><td>Download Maven dependencies and Liberty artifacts</td><td>Maven Central reachable</td></tr>
+<tr><td>TCP port 9080</td><td>Open Liberty HTTP endpoint</td><td>Must be available locally</td></tr>
+<tr><td>Disk space</td><td>Maven cache, Liberty runtime, build artifacts</td><td>At least 2 GB recommended</td></tr>
+</table>
+
+<h3>Download the Prerequisite Script</h3>
+
+<p>Use the provided script:</p>
+
+<div class="callout success">
+<b>File:</b> <code>modresorts-lab-prereq.sh</code><br>
+<a href="modresorts-lab-prereq.sh" download>Download prerequisite script</a>
+</div>
+
+<p>If the HTML file and script are distributed together, keep both files in the same directory so the download link above works.</p>
+
+<h3>Run the Preflight</h3>
+
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>chmod +x modresorts-lab-prereq.sh
+./modresorts-lab-prereq.sh</code></pre>
+
+<p>The script will:</p>
+
+<ul>
+<li>Verify the RHEL environment and <code>dnf</code>.</li>
+<li>Install common utilities where permissions allow.</li>
+<li>Ensure a Java 17 JDK is available.</li>
+<li>Check the installed Maven version.</li>
+<li>Install Maven 3.9.16 under <code>~/tools</code> if the existing Maven is too old.</li>
+<li>Add the user-installed Maven to <code>~/.bashrc</code>.</li>
+<li>Verify access to Maven Central.</li>
+<li>Check that TCP port 9080 is available.</li>
+<li>Check available disk space.</li>
+<li>Perform a best-effort check for Bob availability.</li>
+</ul>
+
+<h3>Expected Result</h3>
+
+<pre><code>==============================================================
+ Prerequisite Summary
+==============================================================
+ PASS: &lt;number&gt;
+ WARN: &lt;number&gt;
+ FAIL: 0
+
+READY: No blocking prerequisite failures were detected.</code></pre>
+
+<div class="callout success">
+<b>Proceed to Step 1 only when the script reports <code>FAIL: 0</code>.</b>
+</div>
+
+<div class="callout warn">
+<b>Note:</b> The script does not install Docker, Podman, Kubernetes, OpenShift, Node.js, React, databases, CI/CD tooling, or IBM Bob. None of those are required for this simplified lab.
+</div>
+
+<h3>After Maven Installation</h3>
+
+<p>If Maven was upgraded by the script, either open a new terminal or run:</p>
+
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>source ~/.bashrc
+mvn -version
+java -version
+javac -version</code></pre>
+
+<p>Recommended output:</p>
+
+<pre><code>Java 17
+Maven 3.9.x</code></pre>
+
+</section>
+
+
+<section class="card" id="step1"><div class="kicker">Step 1</div><h2>Import the Legacy Application</h2>
+<p>Extract <code>modresorts-twas-j8.zip</code> and open the project in Bob.</p>
+<pre><code>modresorts-twas-j8/
+├── pom.xml
+├── Containerfile
+├── WebContent/
+├── src/main/java/
+├── src/main/resources/
+├── src/main/liberty/config/server.xml
+├── migration-bundle/
+└── was_dependency/</code></pre>
+<div class="callout warn"><b>Do not modify code yet.</b> First use Bob to understand the application.</div>
+</section>
+<section class="card" id="step2"><div class="kicker">Step 2</div><h2>Codebase Review & Analysis</h2>
+<p class="label">Prompt to Bob</p>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>Analyze this legacy Java application and provide a detailed assessment.
+
+Include:
+- Current application architecture
+- Major application components
+- Java version
+- Java EE / Servlet technologies in use
+- Maven configuration
+- Traditional WebSphere dependencies
+- WebSphere-specific APIs used by the application
+- External integrations
+- Runtime configuration
+- Application packaging and deployment model
+- Deprecated APIs
+- Technical debt
+- Code quality concerns
+- Security concerns
+- Potential modernization risks
+
+Pay particular attention to dependencies or source code that tie the application to traditional IBM WebSphere Application Server.
+
+Do not modify any code yet.
+
+Create a readable HTML report containing:
+- Executive summary
+- Architecture overview
+- Technology stack
+- Dependency analysis
+- WebSphere-specific dependencies
+- Technical debt
+- Security observations
+- Modernization considerations</code></pre>
+
+<details open><summary>Expected findings</summary><div>
+<p>Bob should find JSP/HTML/JavaScript, Java Servlets, Java EE APIs, Maven WAR packaging, and traditional WebSphere dependencies.</p>
+<p>Examples:</p>
+<pre><code>com.ibm.websphere.security.WSSecurityHelper
+com.ibm.websphere.servlet.response.ResponseUtils
+com.ibm.websphere.runtime.ServerName
+com.ibm.websphere.naming.WsnInitialContextFactory</code></pre>
+<p>Bob should also identify <code>com.ibm.websphere.appserver:was_public:9.0.0</code>.</p>
+</div></details>
+</section>
+<section class="card" id="step3"><div class="kicker">Step 3</div><h2>Define Modernization Requirements</h2>
+<p class="label">Prompt to Bob</p>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>Create a modernization plan for this application.
+
+Requirements:
+- Keep the application as a monolith
+- Migrate from Java 8 to Java 17
+- Remove traditional WebSphere-specific APIs where possible
+- Replace proprietary WebSphere APIs with standard Java, Servlet, or JNDI alternatives
+- Remove obsolete traditional WebSphere build dependencies where possible
+- Keep the existing JSP/HTML frontend
+- Preserve existing application behavior and business logic
+- Continue packaging the application as a WAR
+- Update Maven configuration as needed
+- Run the application locally on Open Liberty
+- Reuse the existing Liberty server.xml where appropriate
+- Identify remaining deprecated APIs
+- Define build and validation steps
+
+Do not:
+- Convert the application to microservices
+- Introduce Kubernetes or OpenShift
+- Replace JSP with React
+- Change the database platform
+- Add CI/CD
+- Redesign the business architecture
+
+Target state:
+Java 8 + Traditional WebSphere
+→ Java 17 + Open Liberty
+
+Provide:
+1. Current-state summary
+2. Files requiring changes
+3. WebSphere-specific dependencies to remove or replace
+4. Java version changes
+5. Maven changes
+6. Liberty configuration changes
+7. Step-by-step implementation plan
+8. Testing strategy
+9. Validation criteria
+10. Remaining risks
+
+Do not change the code yet.</code></pre>
+</section>
+<section class="card" id="step4"><div class="kicker">Step 4</div><h2>Review the Modernization Plan</h2>
+<div class="flow">Analyze legacy application
+        ↓
+Identify WebSphere-specific APIs
+        ↓
+Replace proprietary APIs
+        ↓
+Remove obsolete dependencies
+        ↓
+Java 8 → Java 17
+        ↓
+Update Maven
+        ↓
+Build WAR
+        ↓
+Run Open Liberty
+        ↓
+Verify /resorts
+        ↓
+Run tests</div>
+<div class="callout"><b>Review checkpoint:</b> confirm Bob is not introducing microservices, Kubernetes, React, database migration, or CI/CD.</div>
+</section>
+<section class="card" id="step5"><div class="kicker">Step 5</div><h2>Automated Code Transformation</h2>
+<p class="label">Prompt to Bob</p>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>Using the approved modernization plan, modernize the application.
+
+Make the required code and configuration changes to:
+- Migrate the project from Java 8 to Java 17
+- Remove traditional WebSphere-specific Java APIs
+- Replace proprietary APIs with standard Java, Servlet, or JNDI alternatives
+- Remove the was_public dependency if it is no longer required
+- Update Maven configuration
+- Preserve the existing monolithic application architecture
+- Keep the existing JSP/HTML frontend
+- Preserve existing application functionality
+- Keep WAR packaging
+- Configure the application to run locally on Open Liberty
+- Reuse or update the existing Liberty server.xml where appropriate
+
+Do not:
+- Convert to microservices
+- Introduce Kubernetes or OpenShift
+- Replace JSP with React
+- Change the database
+- Add CI/CD
+- Redesign the business logic
+
+After making the changes:
+1. Run mvn clean package
+2. Fix compilation errors
+3. Confirm BUILD SUCCESS
+4. Confirm the WAR file is generated
+5. Summarize every file changed
+6. Explain why each change was required
+7. Identify any remaining deprecated APIs or warnings</code></pre>
+
+<details><summary>Expected modernization examples</summary><div>
+<ul>
+<li><b>LogoutServlet:</b> <code>WSSecurityHelper</code> → <code>request.logout()</code> + session invalidation.</li>
+<li><b>UpperServlet:</b> <code>ResponseUtils.encodeDataString()</code> → portable HTML escaping.</li>
+<li><b>WeatherServlet:</b> <code>ServerName</code> → standard Java runtime information.</li>
+<li><b>WeatherServlet:</b> <code>WsnInitialContextFactory</code> → <code>new InitialContext()</code>.</li>
+<li><b>Maven:</b> remove <code>was_public</code> if no longer needed; target Java 17.</li>
+</ul>
+</div></details>
+</section>
+<section class="card" id="step6"><div class="kicker">Step 6</div><h2>Build the Modernized Application</h2>
+<p class="label">Prompt to Bob</p>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>Build the modernized application.
+
+Run:
+
+mvn clean package
+
+Validate that:
+
+- The source code compiles successfully
+- All required dependencies resolve
+- The WAR file is generated successfully
+- The final build returns BUILD SUCCESS
+
+Expected artifact:
+
+target/modresorts-2.0.0.war
+
+If the build fails:
+
+- Analyze the Maven errors
+- Identify the root cause
+- Fix the code, dependency, or configuration issue
+- Preserve the existing business behavior
+- Re-run the build
+
+Continue until:
+
+mvn clean package
+
+returns BUILD SUCCESS.
+
+At completion, summarize:
+1. Build result
+2. Issues encountered
+3. Changes made to resolve them
+4. Location of the generated WAR file</code></pre>
+<div class="callout success"><b>Expected outcome:</b> Bob continues until the application builds successfully and the WAR is created.</div>
+</section>
+<section class="card" id="step7"><div class="kicker">Step 7</div><h2>Automated Testing & Quality Assurance</h2>
+<p>Start with <code>WeatherServlet</code>.</p>
+<p class="label">Prompt to Bob</p>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>Create an automated test harness for WeatherServlet.
+
+Requirements:
+- Use JUnit 5
+- Use Mockito
+- Use Spring Test mock servlet objects
+- Do not convert the application to Spring Boot
+- Do not call live external weather services
+- Mock external HTTP calls
+- Keep tests deterministic
+
+Test:
+- supported cities
+- default weather behavior
+- missing WEATHER_API_KEY
+- blank API key
+- short API key
+- invalid city
+- missing city
+- successful weather API response
+- non-2xx weather API response
+- connection failure
+- POST delegation to GET
+- init lifecycle behavior
+- destroy lifecycle behavior
+
+Add JaCoCo.
+
+Set a minimum WeatherServlet line coverage target of 80%.
+
+Do not lower the coverage threshold to make the build pass.
+
+Fix defects discovered by the tests where appropriate.</code></pre>
+</section>
+<section class="card" id="step8"><div class="kicker">Step 8</div><h2>Run Tests &amp; Fix Issues</h2>
+<p class="label">Prompt to Bob</p>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>Run the complete automated test and quality verification suite.
+
+Execute:
+
+mvn clean verify
+
+Validate the following quality gates:
+
+- All tests pass
+- Test failures = 0
+- Test errors = 0
+- WeatherServlet line coverage &gt;= 80%
+- JaCoCo coverage report is generated
+- Maven build completes successfully
+
+If any tests fail:
+
+1. Analyze the failing test output
+2. Determine the root cause
+3. Identify whether the issue is:
+   - test configuration
+   - dependency mismatch
+   - missing test resource
+   - application defect
+   - incorrect mock behavior
+   - environment issue
+
+4. Fix the root cause
+5. Re-run the tests
+
+Do not:
+- Disable failing tests
+- Skip tests
+- Reduce the coverage threshold
+- Remove meaningful assertions simply to make tests pass
+
+If code coverage is below 80%:
+
+- Analyze the JaCoCo report
+- Identify meaningful uncovered code paths
+- Add appropriate tests
+- Re-run mvn clean verify
+
+Continue until all quality gates are satisfied.
+
+At completion, report:
+
+1. Total tests executed
+2. Tests passed
+3. Failures
+4. Errors
+5. WeatherServlet line coverage
+6. JaCoCo report location
+7. Final Maven build status</code></pre>
+
+<table><tr><th>Quality Gate</th><th>Target</th></tr>
+<tr><td>Tests</td><td>All passing</td></tr>
+<tr><td>Failures / Errors</td><td>0 / 0</td></tr>
+<tr><td>WeatherServlet line coverage</td><td>&ge; 80%</td></tr>
+<tr><td>Build</td><td>SUCCESS</td></tr></table>
+</section>
+<section class="card" id="step9"><div class="kicker">Step 9</div><h2>Review Code Coverage</h2>
+<p class="label">Prompt to Bob</p>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>Analyze the JaCoCo coverage report.
+
+Provide:
+- WeatherServlet line coverage
+- branch coverage
+- uncovered methods
+- uncovered error paths
+- recommended additional tests
+
+Add meaningful tests until WeatherServlet line coverage exceeds 80%.
+
+Do not add meaningless tests purely to increase coverage.</code></pre>
+<p>Coverage report: <code>target/site/jacoco/index.html</code></p>
+</section>
+<section class="card" id="step10"><div class="kicker">Step 10</div><h2>Run on Open Liberty</h2>
+<p class="label">Prompt to Bob</p>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>Prepare this application to run locally on Open Liberty.
+
+Use the existing:
+src/main/liberty/config/server.xml
+
+where appropriate.
+
+Ensure:
+- the application WAR is deployed
+- HTTP port 9080 is configured
+- context root is /resorts
+- required Liberty features are enabled
+
+Start the application using the Liberty Maven plugin.
+
+Use:
+mvn liberty:dev
+
+Fix any startup errors.</code></pre>
+</section>
+<section class="card" id="step11"><div class="kicker">Step 11</div><h2>Verify the Modernized Application</h2>
+<p class="label">Prompt to Bob</p>
+<p>From the Linux VM:</p>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>curl -I http://localhost:9080/resorts/</code></pre>
+<div class="callout success"><b>Expected:</b> <code>HTTP/1.1 200 OK</code></div>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>curl http://localhost:9080/resorts/</code></pre>
+
+<p class="label">Application verification prompt</p>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>Verify the modernized application is running correctly on Open Liberty.
+
+Validate:
+- Liberty started successfully
+- ModResorts deployed successfully
+- /resorts responds
+- HTTP response is successful
+- main page loads
+- key application functions continue to behave as expected
+
+Report:
+1. Liberty startup status
+2. Deployment status
+3. Application URL
+4. HTTP status
+5. Functional verification results
+6. Remaining warnings or issues</code></pre>
+</section>
+<section class="card" id="step12"><div class="kicker">Step 12</div><h2>Automated Documentation Generation</h2>
+<p class="label">Prompt to Bob</p>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>Generate a complete modernization report for this application.
+
+Create a readable interactive HTML document containing:
+
+1. Executive Summary
+2. Original Architecture
+   - Java 8
+   - traditional WebSphere
+   - legacy dependencies
+3. Modernized Architecture
+   - Java 17
+   - Open Liberty
+   - portable Java APIs
+4. Files Changed
+5. WebSphere-Specific APIs Removed
+6. Dependencies Removed or Updated
+7. Maven Changes
+8. Liberty Configuration
+9. Build Results
+10. Automated Test Results
+11. Code Coverage Results
+12. Application Runtime Verification
+13. Before vs After Comparison
+14. Remaining Deprecated APIs
+15. Remaining Risks
+16. Recommended Future Improvements
+
+Include diagrams showing:
+
+Java 8 + Traditional WebSphere
+→
+Java 17 + Open Liberty
+
+Make it clear that the application remains a monolith and that no microservices, Kubernetes, React migration, database migration, or CI/CD implementation was performed.</code></pre>
+</section>
+<section class="card" id="architecture"><div class="kicker">Final Architecture</div><h2>Target State</h2>
+<div class="flow">BEFORE
+ModResorts Monolith
+      │
+    Java 8
+      │
+Traditional WebSphere APIs
+      │
+ was_public.jar
+      │
+Traditional WebSphere
+
+       ↓ IBM Bob
+Analyze / Plan / Modify
+Build / Test / Fix
+       ↓
+
+AFTER
+ModResorts Monolith
+      │
+   Java 17
+      │
+Standard Java / Servlet / JNDI
+      │
+ Open Liberty
+      │
+WAR Deployment
+      │
+/resorts HTTP 200</div>
+</section>
+<section class="card" id="criteria"><div class="kicker">Completion Criteria</div><h2>When the Lab Is Complete</h2>
+<ul>
+<li>Application remains a monolith.</li>
+<li>Java 8 is migrated to Java 17.</li>
+<li>Traditional WebSphere-specific APIs are removed where practical.</li>
+<li><code>was_public</code> is removed if no longer needed.</li>
+<li>Maven build succeeds and WAR is generated.</li>
+<li>Automated tests pass and the coverage target is achieved.</li>
+<li>Open Liberty starts successfully.</li>
+<li><code>/resorts</code> returns HTTP 200.</li>
+<li>Existing application behavior is preserved.</li>
+<li>Modernization documentation is generated.</li>
+</ul>
+<div class="callout success"><b>Workshop takeaway:</b> modernization does not always mean rewriting the application. Here, the value comes from removing legacy platform dependencies and moving the same business application onto a modern, supported Java runtime.</div>
+</section></main></div>
+<footer>IBM Bob Java Modernization Lab • ModResorts • Interactive Workshop Guide</footer>
+</body></html>
