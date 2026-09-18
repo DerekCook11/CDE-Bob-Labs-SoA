@@ -169,6 +169,8 @@ Provide a concise modernization plan before making changes.
 
 Pay special attention to:
 - Gson or other runtime libraries that may compile but be missing at runtime
+- Missing JavaScript Library in legacy codebase leading to Pikaday not being defined
+- Restricted date ranges configured in legacy codebase calendar
 - Static resources such as JavaScript/CSS files referenced by the UI but absent from the repository
 - Maven Surefire/JaCoCo configuration that must work both with mvn clean verify and mvn liberty:dev</code></pre>
 
