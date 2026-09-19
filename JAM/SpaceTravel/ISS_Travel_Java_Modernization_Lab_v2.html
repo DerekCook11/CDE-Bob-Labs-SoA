@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISS Travel App — IBM Bob Java Modernization Workshop</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --panel:#ffffff; --ink:#17223b; --muted:#5f6b85;
+    --brand:#0f62fe; --brand2:#001d6c; --ok:#198038; --warn:#b28600;
+    --bad:#da1e28; --line:#dfe5ef; --code:#101828; --soft:#edf4ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+  header{background:linear-gradient(135deg,#001d6c,#0f62fe);color:#fff;padding:44px 28px}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{margin:0 0 10px;font-size:34px}
+  h2{margin-top:0}
+  h3{margin-bottom:8px}
+  .subtitle{max-width:850px;color:#dbe8ff;font-size:17px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+  .chip{padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);font-size:13px}
+  nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);z-index:10}
+  .navin{max-width:1180px;margin:auto;display:flex;gap:6px;padding:10px 14px;overflow:auto}
+  .tabbtn{border:0;background:#eef2f7;color:#25324b;padding:9px 13px;border-radius:8px;cursor:pointer;white-space:nowrap;font-weight:600}
+  .tabbtn.active{background:var(--brand);color:#fff}
+  main{max-width:1180px;margin:28px auto;padding:0 16px 60px}
+  .tab{display:none}
+  .tab.active{display:block}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;margin:0 0 18px;box-shadow:0 3px 14px rgba(20,40,80,.05)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  .kpi{background:#f8fbff;border:1px solid #d8e7ff;border-radius:12px;padding:16px}
+  .kpi b{display:block;font-size:22px;margin-top:4px}
+  .good{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+  pre{background:var(--code);color:#e6edf7;padding:16px;border-radius:10px;overflow:auto;white-space:pre-wrap}
+  code{font-family:Consolas,Monaco,monospace}
+  .copy{float:right;border:0;background:#fff;color:#0f62fe;padding:6px 10px;border-radius:7px;cursor:pointer;font-weight:700}
+  .callout{border-left:5px solid var(--brand);background:var(--soft);padding:14px 16px;border-radius:8px;margin:14px 0}
+  .warning{border-left-color:var(--warn);background:#fff8e1}
+  .success{border-left-color:var(--ok);background:#edf9f0}
+  table{width:100%;border-collapse:collapse;background:#fff}
+  th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{background:#f3f6fa}
+  .step{display:flex;gap:14px;align-items:flex-start}
+  .num{min-width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--brand);color:#fff;font-weight:800}
+  .arch{font-family:Consolas,monospace;background:#0b1220;color:#d7e3ff;padding:18px;border-radius:10px;overflow:auto}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+  .btn{border:1px solid var(--brand);background:#fff;color:var(--brand);padding:9px 13px;border-radius:8px;cursor:pointer;font-weight:700}
+  .btn.primary{background:var(--brand);color:#fff}
+  .checklist label{display:block;padding:7px 0}
+  .small{font-size:13px;color:var(--muted)}
+  footer{text-align:center;color:var(--muted);padding:25px}
+  @media print{
+    nav,.toolbar,.copy{display:none!important}
+    .tab{display:block!important}
+    body{background:#fff}
+    .card{box-shadow:none;break-inside:avoid}
+    header{background:#fff;color:#000;border-bottom:2px solid #000}
+    .subtitle{color:#333}
+    .chip{color:#000;border:1px solid #999;background:#fff}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>ISS Travel App — Java Modernization Lab</h1>
+    <div class="subtitle">
+      Use IBM Bob to analyze and modernize a legacy Java 8 / Java EE 7 / WebSphere application into a Java 17 / Open Liberty application while preserving the UI and REST behavior.
+    </div>
+    <div class="chips">
+      <span class="chip">Legacy Java 8</span>
+      <span class="chip">Java EE 7</span>
+      <span class="chip">WebSphere 9</span>
+      <span class="chip">EAR + WAR</span>
+      <span class="chip">Target: Java 17</span>
+      <span class="chip">Target: Open Liberty</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="navin">
+    <button class="tabbtn active" onclick="showTab('overview',this)">Overview</button>
+    <button class="tabbtn" onclick="showTab('prereq',this)">Prerequisites</button>
+    <button class="tabbtn" onclick="showTab('step0',this)">Step 0 — Run Before</button>
+    <button class="tabbtn" onclick="showTab('baseline',this)">Baseline</button>
+    <button class="tabbtn" onclick="showTab('step1',this)">Step 1 — Analyze</button>
+    <button class="tabbtn" onclick="showTab('step2',this)">Step 2 — Plan</button>
+    <button class="tabbtn" onclick="showTab('step3',this)">Step 3 — Modernize</button>
+    <button class="tabbtn" onclick="showTab('step4',this)">Step 4 — Run After</button>
+    <button class="tabbtn" onclick="showTab('verify',this)">Verification</button>
+    <button class="tabbtn" onclick="showTab('final',this)">Final Report</button>
+  </div>
+</nav>
+
+<main>
+  <div class="toolbar">
+    <button class="btn primary" onclick="window.print()">Print / Save PDF</button>
+    <button class="btn" onclick="showAll()">Show All Sections</button>
+    <button class="btn" onclick="resetChecks()">Reset Checklist</button>
+  </div>
+
+  <section id="overview" class="tab active">
+    <div class="card">
+      <h2>Lab Goal</h2>
+      <p>Modernize the provided <b>ISS Travel App</b> using IBM Bob. The application intentionally contains WebSphere-specific APIs and deployment artifacts so Bob has a realistic modernization task.</p>
+      <div class="grid">
+        <div class="kpi">Starting Runtime<b>Java 8</b></div>
+        <div class="kpi">Starting Server<b>WebSphere 9</b></div>
+        <div class="kpi">Target Runtime<b>Java 17</b></div>
+        <div class="kpi">Target Server<b>Open Liberty</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Workshop Flow</h2>
+      <div class="arch">STEP 0 — RUN BEFORE
+Legacy UI / Java 8 / WebSphere coupling
+        |
+        v
+STEP 1 — ANALYZE
+modernization-assessment.md
+        |
+        v
+STEP 2 — PLAN
+modernization-plan.md
+        |
+        v
+STEP 3 — MODERNIZE
+Bob changes code, build, runtime
+        |
+        v
+STEP 4 — RUN AFTER
+Java 17 + Open Liberty
+        |
+        v
+COMPARE
+Same business behavior, modern platform</div>
+      <div class="callout success"><b>Workshop message:</b> the business application and user experience are preserved while the underlying Java and application-server platform are modernized.</div>
+    </div>
+
+    <div class="card">
+      <h2>Before vs After</h2>
+      <div class="grid">
+        <div>
+          <h3>Before</h3>
+          <div class="arch">Browser
+  |
+  v
+index.html + main.js
+  |
+  v
+WebSphere Application Server 9
+  |
+  +-- ISS Travel WAR
+  +-- WebSphere APIs
+  +-- IBM descriptors
+  +-- was-public-api
+  |
+  v
+EAR + WAR
+Java EE 7
+Java 8</div>
+        </div>
+        <div>
+          <h3>Target</h3>
+          <div class="arch">Browser
+  |
+  v
+index.html + main.js
+  |
+  v
+Open Liberty
+  |
+  +-- ISS Travel WAR
+  +-- Standard Servlet APIs
+  +-- server.xml
+  |
+  v
+WAR only
+Java EE 8 / Servlet 4
+Java 17</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="prereq" class="tab">
+    <div class="card">
+      <h2>Prerequisites</h2>
+      <p>Run the lab from the root of the extracted project:</p>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>cd ~/Downloads/ISS/iss-travel-legacy
+pwd
+ls -al
+java -version
+mvn -version</code></pre>
+      <div class="callout success"><b>Expected environment:</b> Java 17 and Maven 3.x on the Red Hat VM. WebSphere does not need to be installed; in fact, the missing WebSphere runtime helps expose the modernization problem.</div>
+      <div class="checklist">
+        <label><input type="checkbox"> Project extracted successfully</label>
+        <label><input type="checkbox"> Java 17 available</label>
+        <label><input type="checkbox"> Maven available</label>
+        <label><input type="checkbox"> Bob available on the VM</label>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="step0" class="tab">
+    <div class="card">
+      <h2>Step 0 — Run the Legacy Application / Capture the Before State</h2>
+      <p>The workshop should begin by showing participants the application <b>before</b> modernization. This creates a visible baseline for the final comparison.</p>
+
+      <h3>A. Preview the legacy portal UI</h3>
+      <p>From the legacy web application directory:</p>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>cd ~/Downloads/ISS/iss-travel-legacy/legacy-web/src/main/webapp
+python3 -m http.server 8080</code></pre>
+
+      <p>From another terminal, confirm that the page is being served:</p>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>curl -I http://localhost:8080
+curl -s http://localhost:8080 | grep "ISS Travel App"</code></pre>
+
+      <div class="callout success">
+        <b>Expected:</b> HTTP 200 and the portal should display the ISS Travel App UI with the legacy badges:
+        <code>Legacy Java EE 7</code>, <code>IBM WebSphere 9</code>, and <code>Java 8</code>.
+      </div>
+
+      <h3>B. What should participants see?</h3>
+      <ul>
+        <li>Existing travel requests.</li>
+        <li>The Add Travel Request form.</li>
+        <li>Traveler, destination, purpose, departure date, and status fields.</li>
+        <li>The browser UI itself loads successfully.</li>
+      </ul>
+
+      <div class="callout warning">
+        <b>Important:</b> when the application is served only through Python's static web server, the UI is visible but the Java API is not running. Therefore <code>GET /api/trips</code> and <code>POST /api/trips</code> will not work yet. This is expected.
+      </div>
+
+      <h3>C. Demonstrate the legacy backend dependency</h3>
+      <p>Return to the project root and attempt the actual Maven build:</p>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>cd ~/Downloads/ISS/iss-travel-legacy
+echo $WAS_HOME
+mvn clean package</code></pre>
+
+      <div class="callout warning">
+        <b>Expected legacy failure:</b> the build should fail because the project expects the WebSphere runtime JAR through
+        <code>${env.WAS_HOME}/plugins/com.ibm.ws.runtime.jar</code>.
+      </div>
+
+      <h3>D. Capture the official Before State</h3>
+      <table>
+        <tr><th>Area</th><th>Before Modernization</th></tr>
+        <tr><td>User interface</td><td>ISS Travel portal is visible</td></tr>
+        <tr><td>View travel requests</td><td>Business behavior exists in legacy application</td></tr>
+        <tr><td>Add travel request</td><td><code>POST /api/trips</code> exists in legacy design</td></tr>
+        <tr><td>Java</td><td>Java 8 source / target</td></tr>
+        <tr><td>Server</td><td>IBM WebSphere Application Server 9</td></tr>
+        <tr><td>Packaging</td><td>EAR + WAR</td></tr>
+        <tr><td>Vendor dependency</td><td>WebSphere runtime required</td></tr>
+        <tr><td>Build on vanilla VM</td><td class="bad">Fails</td></tr>
+      </table>
+
+      <div class="checklist">
+        <label><input type="checkbox"> Legacy UI displayed</label>
+        <label><input type="checkbox"> Existing travel requests visible in portal design</label>
+        <label><input type="checkbox"> Add Travel Request form visible</label>
+        <label><input type="checkbox"> Legacy Maven build attempted</label>
+        <label><input type="checkbox"> WebSphere dependency failure captured</label>
+      </div>
+    </div>
+  </section>
+
+  <section id="baseline" class="tab">
+    <div class="card">
+      <h2>Baseline the Legacy Application</h2>
+      <div class="step"><div class="num">1</div><div>
+        <h3>Inspect the legacy characteristics</h3>
+        <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>./inspect-legacy.sh</code></pre>
+      </div></div>
+
+      <div class="step"><div class="num">2</div><div>
+        <h3>Attempt the legacy build</h3>
+        <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>mvn clean package</code></pre>
+      </div></div>
+
+      <div class="callout warning">
+        <b>Expected baseline failure:</b><br>
+        Maven should report that <code>${env.WAS_HOME}/plugins/com.ibm.ws.runtime.jar</code> is not a valid absolute system path because WebSphere is not installed.
+      </div>
+
+      <h3>Record the Before State</h3>
+      <table>
+        <tr><th>Area</th><th>Before State</th></tr>
+        <tr><td>Java</td><td>Source / target 1.8</td></tr>
+        <tr><td>Application Server</td><td>IBM WebSphere Application Server 9</td></tr>
+        <tr><td>Packaging</td><td>EAR + WAR</td></tr>
+        <tr><td>Servlet namespace</td><td><code>javax.servlet</code></td></tr>
+        <tr><td>Vendor APIs</td><td><code>com.ibm.websphere.*</code>, <code>com.ibm.ws.*</code></td></tr>
+        <tr><td>Deployment descriptors</td><td>IBM-specific descriptors present</td></tr>
+        <tr><td>Build result</td><td class="bad">Expected failure without WebSphere runtime</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section id="step1" class="tab">
+    <div class="card">
+      <h2>Step 1 — Ask Bob to Analyze Only</h2>
+      <p>In Bob Agent Mode, open the complete <code>iss-travel-legacy</code> project and use the following prompt.</p>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>Analyze this legacy Java application and do not modify any files yet.
+
+The application is an ISS Travel App originally designed for:
+
+- Java 8
+- Java EE 7
+- IBM WebSphere Application Server 9
+- EAR + WAR packaging
+
+The current development environment has:
+
+- Java 17
+- Maven 3.9
+- No IBM WebSphere installation
+
+The current build fails with:
+
+'dependencies.dependency.systemPath' for
+com.ibm.websphere:was-public-api:jar
+must specify an absolute path but is
+${env.WAS_HOME}/plugins/com.ibm.ws.runtime.jar
+
+Please analyze the complete project and produce a modernization assessment.
+
+Identify:
+
+1. Java 8 dependencies and compiler settings.
+2. WebSphere-specific Java APIs.
+3. IBM-specific deployment descriptors.
+4. EAR/WAR packaging dependencies.
+5. Maven dependencies tied to WebSphere.
+6. Java EE / javax dependencies.
+7. What prevents this application from running on a vanilla Java environment.
+8. What should be changed to migrate the application to Java 17 and Open Liberty.
+9. Which existing application behavior and REST APIs must be preserved, including the ability to add a new travel request and immediately display it in the portal.
+
+Do not change any files yet.
+
+Create a file called:
+
+modernization-assessment.md
+
+Include:
+- current architecture
+- identified technical debt
+- WebSphere dependencies
+- Java version dependencies
+- migration risks
+- recommended target architecture
+- proposed modernization steps</code></pre>
+
+      <div class="callout"><b>Checkpoint:</b> Confirm Bob created <code>modernization-assessment.md</code> and did not modify application source files.</div>
+      <div class="checklist">
+        <label><input type="checkbox"> Assessment file created</label>
+        <label><input type="checkbox"> WebSphere APIs identified</label>
+        <label><input type="checkbox"> Java 8 settings identified</label>
+        <label><input type="checkbox"> No modernization changes made yet</label>
+      </div>
+    </div>
+  </section>
+
+  <section id="step2" class="tab">
+    <div class="card">
+      <h2>Step 2 — Ask Bob to Create the Modernization Plan</h2>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>Now create a detailed modernization plan based on modernization-assessment.md.
+
+Target architecture:
+
+- Java 17
+- Open Liberty
+- standard Servlet APIs
+- WAR-only deployment
+- no WebSphere runtime dependency
+- no com.ibm.websphere.* imports
+- no com.ibm.ws.* imports
+- no IBM-specific deployment descriptors
+- preserve index.html and main.js
+- preserve GET /api/trips
+- preserve POST /api/trips
+- preserve GET /api/trips?id=&lt;id&gt;
+- preserve GET /api/health
+- preserve the existing JSON response structures
+- preserve the Add Travel Request form and immediate table refresh
+
+Do not perform the migration yet.
+
+Create:
+
+modernization-plan.md
+
+Show every file that will need to be changed, removed, or created.</code></pre>
+
+      <div class="callout"><b>Checkpoint:</b> Review <code>modernization-plan.md</code> before allowing Bob to modify the code.</div>
+      <div class="checklist">
+        <label><input type="checkbox"> Plan file created</label>
+        <label><input type="checkbox"> Target Java 17 documented</label>
+        <label><input type="checkbox"> Open Liberty target documented</label>
+        <label><input type="checkbox"> File-level changes listed</label>
+      </div>
+    </div>
+  </section>
+
+  <section id="step3" class="tab">
+    <div class="card">
+      <h2>Step 3 — Ask Bob to Perform the Modernization</h2>
+      <p>This is the execution step. Bob should now modify, build, run, verify, and document the application.</p>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>Implement the modernization plan now.
+
+Use modernization-assessment.md and modernization-plan.md as the source of truth.
+
+Modernize the ISS Travel App to the following target state:
+
+- Java 17
+- Open Liberty
+- WAR-only deployment
+- Standard Servlet APIs
+- No WebSphere runtime dependency
+- No com.ibm.websphere.* imports
+- No com.ibm.ws.* imports
+- No was_public.jar or com.ibm.ws.runtime.jar dependency
+- Remove the legacy EAR module if it is no longer required
+- Remove IBM-specific deployment descriptors:
+  - ibm-web-bnd.xml
+  - ibm-web-ext.xml
+  - ibm-metadata.xml
+- Add an Open Liberty server.xml
+- Add the Liberty Maven plugin
+- Preserve index.html and main.js
+- Preserve these endpoints:
+  - GET /api/trips
+  - POST /api/trips
+  - GET /api/trips?id=&lt;id&gt;
+  - GET /api/health
+- Preserve the existing JSON response structure and sample travel data
+- Preserve the Add Travel Request form and its ability to immediately show the new request in the table
+
+After making the changes:
+
+1. Run mvn clean package.
+2. Fix any compilation or dependency errors.
+3. Run the application on Open Liberty.
+4. Verify /api/health returns HTTP 200.
+5. Verify GET /api/trips returns the expected travel records.
+6. Verify POST /api/trips creates a new travel request and returns HTTP 201.
+7. Verify the newly created request appears when GET /api/trips is called again.
+8. Verify /api/trips?id=1001 returns the expected record.
+9. Search the project to confirm there are no remaining:
+   - com.ibm.websphere.*
+   - com.ibm.ws.*
+   - WAS_HOME references
+   - com.ibm.ws.runtime.jar references
+10. Confirm the IBM-specific deployment descriptors have been removed.
+11. Confirm the application is compiling with Java 17.
+
+Do not change the business behavior or browser UI unless required for compatibility.
+
+Create a final report named:
+
+iss-travel-modernization-final-report.html
+
+The report should include:
+
+- Executive summary
+- Before architecture
+- After architecture
+- Files changed
+- Files removed
+- Files created
+- Java 8 to Java 17 changes
+- WebSphere to Open Liberty changes
+- Dependencies removed
+- Dependencies added
+- Before and after Maven build results
+- API verification results
+- Remaining risks or follow-up items</code></pre>
+
+      <div class="callout success"><b>Expected result:</b> The same application behavior should now run on Java 17 + Open Liberty without WebSphere-specific dependencies.</div>
+    </div>
+  </section>
+
+
+  <section id="step4" class="tab">
+    <div class="card">
+      <h2>Step 4 — Run the Modernized Application / Capture the After State</h2>
+      <p>After Bob completes the modernization, participants should run the new application and prove that the same business behavior works on Java 17 + Open Liberty.</p>
+
+      <h3>A. Build the modernized application</h3>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>mvn clean package</code></pre>
+      <div class="callout success"><b>Expected:</b> BUILD SUCCESS.</div>
+
+      <h3>B. Start Open Liberty</h3>
+      <p>Use the Liberty Maven goal or command generated by Bob. A typical example is:</p>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>mvn liberty:run</code></pre>
+      <div class="small">If Bob generates a different module-specific command, use that command instead.</div>
+
+      <h3>C. Verify the modernized UI</h3>
+      <p>Open the modernized application URL in the browser. Depending on the context root, this is commonly:</p>
+      <pre><code>http://&lt;VM-IP&gt;:9080/iss-travel/</code></pre>
+
+      <p>Confirm that the portal still shows:</p>
+      <ul>
+        <li>ISS Travel App</li>
+        <li>Existing travel requests</li>
+        <li>Add Travel Request form</li>
+        <li>Traveler, destination, purpose, departure date, and status</li>
+      </ul>
+
+      <h3>D. Add a new travel request from the browser</h3>
+      <p>Enter a sample request such as:</p>
+      <table>
+        <tr><th>Field</th><th>Example</th></tr>
+        <tr><td>Traveler</td><td>Sarah Mitchell</td></tr>
+        <tr><td>Destination</td><td>Houston, TX</td></tr>
+        <tr><td>Purpose</td><td>Mission operations workshop</td></tr>
+        <tr><td>Departure Date</td><td>2026-12-05</td></tr>
+        <tr><td>Status</td><td>PENDING</td></tr>
+      </table>
+
+      <div class="callout success"><b>Expected:</b> the request is created, assigned a new ID, and immediately appears in the travel-request table.</div>
+
+      <h3>E. Verify the same operation through the API</h3>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>curl -i -X POST http://localhost:9080/iss-travel/api/trips \
+  -H "Content-Type: application/json" \
+  -d '{
+    "traveler":"Sarah Mitchell",
+    "destination":"Houston, TX",
+    "purpose":"Mission operations workshop",
+    "departureDate":"2026-12-05",
+    "status":"PENDING"
+  }'</code></pre>
+
+      <div class="callout"><b>Expected:</b> HTTP <code>201 Created</code> and JSON containing the new request ID.</div>
+
+      <h3>F. Confirm the new request appears</h3>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>curl -s http://localhost:9080/iss-travel/api/trips</code></pre>
+
+      <h3>G. Compare Before vs After</h3>
+      <table>
+        <tr><th>Capability</th><th>Before</th><th>After</th></tr>
+        <tr><td>Portal UI</td><td>ISS Travel App</td><td>Same ISS Travel App</td></tr>
+        <tr><td>View requests</td><td>Supported</td><td>Supported</td></tr>
+        <tr><td>Add request</td><td>Supported by legacy app design</td><td>Supported and verified</td></tr>
+        <tr><td>REST behavior</td><td>Legacy API contract</td><td>Same API contract</td></tr>
+        <tr><td>Java</td><td>Java 8</td><td>Java 17</td></tr>
+        <tr><td>Server</td><td>WebSphere 9</td><td>Open Liberty</td></tr>
+        <tr><td>Packaging</td><td>EAR + WAR</td><td>WAR only</td></tr>
+        <tr><td>WebSphere APIs</td><td>Present</td><td>Removed</td></tr>
+        <tr><td>Build on workshop VM</td><td class="bad">Fails</td><td class="good">Succeeds</td></tr>
+      </table>
+
+      <div class="callout success"><b>Key result:</b> the application behaves the same for the user, but the underlying platform is now modern, portable, and buildable on the Java 17 workshop VM.</div>
+
+      <div class="checklist">
+        <label><input type="checkbox"> Modernized Maven build succeeds</label>
+        <label><input type="checkbox"> Open Liberty starts successfully</label>
+        <label><input type="checkbox"> Portal loads in browser</label>
+        <label><input type="checkbox"> Existing travel requests display</label>
+        <label><input type="checkbox"> New travel request can be added</label>
+        <label><input type="checkbox"> New request immediately appears in table</label>
+        <label><input type="checkbox"> POST /api/trips returns HTTP 201</label>
+      </div>
+    </div>
+  </section>
+
+  <section id="verify" class="tab">
+    <div class="card">
+      <h2>Verification</h2>
+      <h3>Build</h3>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>mvn clean package</code></pre>
+
+      <h3>Check for remaining WebSphere references</h3>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>grep -R "com.ibm.websphere\|com.ibm.ws\|WAS_HOME\|com.ibm.ws.runtime.jar" -n . \
+  --exclude-dir=target \
+  --exclude="modernization-assessment.md" \
+  --exclude="modernization-plan.md" \
+  --exclude="iss-travel-modernization-final-report.html"</code></pre>
+
+      <h3>Verify removed descriptors</h3>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>find . -name "ibm-web-bnd.xml" -o -name "ibm-web-ext.xml" -o -name "ibm-metadata.xml"</code></pre>
+
+      <h3>Verify APIs after Liberty starts</h3>
+      <pre><button class="copy" onclick="copyCode(this)">Copy</button><code>curl -i http://localhost:9080/iss-travel/api/health
+
+curl -s http://localhost:9080/iss-travel/api/trips
+
+curl -i -X POST http://localhost:9080/iss-travel/api/trips   -H "Content-Type: application/json"   -d '{"traveler":"Test Traveler","destination":"Houston, TX","purpose":"Verification","departureDate":"2026-12-15","status":"PENDING"}'
+
+curl -s "http://localhost:9080/iss-travel/api/trips?id=1001"</code></pre>
+
+      <div class="callout warning">
+        Depending on the <code>server.xml</code> context root Bob generates, the URL may be either
+        <code>/iss-travel/api/...</code> or simply <code>/api/...</code>. Use the context root defined by the modernized application.
+      </div>
+
+      <div class="checklist">
+        <label><input type="checkbox"> Maven build succeeds</label>
+        <label><input type="checkbox"> Application starts on Open Liberty</label>
+        <label><input type="checkbox"> Health endpoint returns HTTP 200</label>
+        <label><input type="checkbox"> Trips endpoint returns sample data</label>
+        <label><input type="checkbox"> POST /api/trips returns HTTP 201</label>
+        <label><input type="checkbox"> Newly added request appears in GET /api/trips</label>
+        <label><input type="checkbox"> ID lookup returns request 1001</label>
+        <label><input type="checkbox"> No active WebSphere code references remain</label>
+      </div>
+    </div>
+  </section>
+
+  <section id="final" class="tab">
+    <div class="card">
+      <h2>Final Lab Artifact</h2>
+      <p>Bob should create:</p>
+      <pre><code>iss-travel-modernization-final-report.html</code></pre>
+      <p>The report should clearly show what changed and provide a before/after record of the modernization.</p>
+
+      <table>
+        <tr><th>Category</th><th>Before</th><th>After</th></tr>
+        <tr><td>Java</td><td>Java 8</td><td>Java 17</td></tr>
+        <tr><td>Application Server</td><td>WebSphere 9</td><td>Open Liberty</td></tr>
+        <tr><td>Packaging</td><td>EAR + WAR</td><td>WAR only</td></tr>
+        <tr><td>Vendor Runtime</td><td>Required</td><td>Removed</td></tr>
+        <tr><td>WebSphere APIs</td><td>Present</td><td>Removed</td></tr>
+        <tr><td>IBM descriptors</td><td>Present</td><td>Removed</td></tr>
+        <tr><td>Add Travel Request</td><td>Legacy business capability</td><td>Preserved and verified</td></tr>
+        <tr><td>Build</td><td class="bad">Fails without WebSphere</td><td class="good">Succeeds on Java 17</td></tr>
+      </table>
+
+      <div class="callout success">
+        <b>Lab completion criteria:</b> the application builds successfully, runs on Open Liberty, preserves the browser UI and REST responses, and no longer requires WebSphere-specific runtime components.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>What the Student Learned</h2>
+      <ul>
+        <li>How to identify Java version and application-server coupling.</li>
+        <li>How WebSphere-specific APIs reduce application portability.</li>
+        <li>How Bob separates assessment, planning, execution, and verification.</li>
+        <li>How to migrate a Java 8 / Java EE 7 application to Java 17 / Open Liberty.</li>
+        <li>How to validate modernization without changing business behavior.</li>
+        <li>How to prove the same UI and create/read travel-request functions work before and after modernization.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>ISS Travel App — IBM Bob Java Modernization Lab</footer>
+
+<script>
+function showTab(id, btn){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showAll(){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.add('active'));
+  document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('active'));
+}
+function copyCode(btn){
+  const text=btn.parentElement.innerText.replace('Copy','').trim();
+  navigator.clipboard.writeText(text).then(()=>{
+    const old=btn.textContent; btn.textContent='Copied';
+    setTimeout(()=>btn.textContent=old,1200);
+  });
+}
+function resetChecks(){
+  document.querySelectorAll('input[type=checkbox]').forEach(x=>x.checked=false);
+}
+</script>
+</body>
+</html>
