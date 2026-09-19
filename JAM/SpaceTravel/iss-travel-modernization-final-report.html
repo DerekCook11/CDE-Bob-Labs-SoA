@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ISS Travel App — Modernization Final Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #ffffff; color: #1f2328; }
+  .page { max-width: 760px; margin: 0 auto; padding: 40px 24px 60px; }
+  h1 { font-size: 22px; font-weight: 700; color: #1f2328; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #57606a; margin-bottom: 32px; }
+  h2 { font-size: 15px; font-weight: 700; color: #1f2328; margin: 32px 0 10px; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
+  h3 { font-size: 13px; font-weight: 700; color: #1f2328; margin: 18px 0 6px; }
+  p { margin: 8px 0; color: #1f2328; }
+  ul, ol { padding-left: 20px; margin: 8px 0; }
+  li { margin: 3px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+  th { background: #f7f8fa; font-weight: 600; text-align: left; padding: 8px 10px; border: 1px solid #e5e7eb; color: #1f2328; }
+  td { padding: 7px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  code { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 3px; padding: 1px 5px; }
+  pre { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 5px; padding: 14px 16px; overflow-x: auto; margin: 10px 0; white-space: pre-wrap; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-pass { background: #d1fae5; color: #065f46; }
+  .arch-box { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px 16px; margin: 10px 0; }
+  .arch-box pre { background: transparent; border: none; padding: 0; margin: 0; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }
+  .summary-card { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; text-align: center; }
+  .summary-card .num { font-size: 28px; font-weight: 700; color: #3b82d4; }
+  .summary-card .lbl { font-size: 11px; color: #57606a; margin-top: 2px; }
+  .api-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f2f4; }
+  .api-row:last-child { border-bottom: none; }
+  .method { font-family: monospace; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 4px; min-width: 48px; text-align: center; }
+  .get { background: #dbeafe; color: #1e40af; }
+  .post { background: #d1fae5; color: #065f46; }
+  .api-path { font-family: monospace; font-size: 12px; flex: 1; }
+  .api-status { font-size: 12px; font-weight: 600; color: #065f46; }
+  .section-intro { color: #57606a; font-size: 13px; margin-bottom: 8px; }
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>ISS Travel App — Modernization Final Report</h1>
+  <div class="subtitle">Migration: IBM WebSphere 9 / Java 8 / Java EE 7 &nbsp;&#8594;&nbsp; Open Liberty / Java 17 / Jakarta EE 8 &nbsp;&middot;&nbsp; September 2026</div>
+
+  <h2>Executive Summary</h2>
+  <p>The ISS Travel App has been successfully modernized from its legacy IBM WebSphere Application Server 9 / Java 8 target to a portable Open Liberty / Java 17 stack. All WebSphere-specific runtime APIs have been replaced with standard Servlet 4.0 equivalents. The EAR packaging layer has been eliminated. All three IBM-specific deployment descriptors have been deleted. The Maven build now completes cleanly under Java 17 with no warnings, and all four REST endpoints have been verified live on Open Liberty.</p>
+  <p>No business logic, data model, or browser UI was altered. The four seeded travel records and the Add Travel Request form (with immediate table refresh) work identically to the legacy application.</p>
+
+  <div class="summary-grid">
+    <div class="summary-card"><div class="num">9</div><div class="lbl">Files modified</div></div>
+    <div class="summary-card"><div class="num">5</div><div class="lbl">Files removed</div></div>
+    <div class="summary-card"><div class="num">1</div><div class="lbl">Files created</div></div>
+    <div class="summary-card"><div class="num">4/4</div><div class="lbl">Endpoints verified</div></div>
+  </div>
+
+  <h2>Before Architecture</h2>
+  <div class="arch-box"><pre>Browser (index.html + main.js)
+  |
+  v  HTTP/1.1
+IBM WebSphere Application Server 9  (Java 8 / Java EE 7)
+  |
+  +-- iss-travel-enterprise.ear          &lt;-- EAR packaging
+  |     +-- iss-travel.war  (context: /iss-travel)
+  |           +-- TravelServlet   GET/POST /api/trips
+  |           +-- HealthServlet   GET /api/health
+  |           +-- TravelRepository (in-memory)
+  |           +-- TravelRequest   (data model)
+  |           +-- JsonUtil        (hand-rolled JSON)
+  |           +-- legacy/
+  |                 +-- LegacyNamingFactory   -- WsnInitialContextFactory
+  |                 +-- WebSphereSecurityUtil -- WSSecurityHelper
+  |                 +-- WebSphereServerInfo   -- ServerName.getFullName()
+  |
+  +-- IBM WAS Runtime JAR (com.ibm.ws.runtime.jar -- WAS_HOME required)
+        +-- com.ibm.websphere.naming.WsnInitialContextFactory
+        +-- com.ibm.websphere.security.WSSecurityHelper
+        +-- com.ibm.websphere.runtime.ServerName
+        +-- com.ibm.ws.webcontainer.util.ResponseUtils</pre></div>
+
+  <h2>After Architecture</h2>
+  <div class="arch-box"><pre>Browser (index.html + main.js)  &lt;-- unchanged
+  |
+  v  HTTP/1.1  (port 9080)
+Open Liberty 26.0.0.9  (Java 17 / Jakarta EE 8 / servlet-4.0)
+  |
+  +-- iss-travel.war  (context: /iss-travel)   &lt;-- WAR-only, no EAR
+        +-- TravelServlet   GET/POST /api/trips  &lt;-- standard javax.servlet
+        +-- HealthServlet   GET /api/health      &lt;-- standard javax.servlet
+        +-- TravelRepository (in-memory)         &lt;-- unchanged
+        +-- TravelRequest   (data model)         &lt;-- unchanged
+        +-- JsonUtil        (hand-rolled JSON)   &lt;-- unchanged
+        +-- legacy/ (portable stubs)
+              +-- LegacyNamingFactory   -&gt; new InitialContext()
+              +-- WebSphereSecurityUtil -&gt; returns "system"
+              +-- WebSphereServerInfo   -&gt; System.getProperty("wlp.server.name")</pre></div>
+
+  <h2>Files Modified</h2>
+  <table>
+    <thead><tr><th>File</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr><td><code>pom.xml</code></td><td>Removed <code>&lt;module&gt;legacy-ear&lt;/module&gt;</code>; compiler properties <code>1.8</code> &#8594; <code>17</code></td></tr>
+      <tr><td><code>legacy-web/pom.xml</code></td><td>Removed <code>com.ibm.websphere:was-public-api</code>; replaced <code>javax:javaee-api:7.0</code> with <code>jakarta.platform:jakarta.jakartaee-web-api:8.0.0</code>; compiler <code>release 17</code>; added <code>liberty-maven-plugin:3.10.3</code></td></tr>
+      <tr><td><code>legacy/LegacyNamingFactory.java</code></td><td>Removed <code>WsnInitialContextFactory</code>; replaced with <code>new InitialContext()</code></td></tr>
+      <tr><td><code>legacy/WebSphereSecurityUtil.java</code></td><td>Removed <code>WSSecurityHelper</code>; <code>currentUser()</code> returns <code>"system"</code></td></tr>
+      <tr><td><code>legacy/WebSphereServerInfo.java</code></td><td>Removed <code>ServerName</code>; reads <code>wlp.server.name</code> system property</td></tr>
+      <tr><td><code>web/HealthServlet.java</code></td><td>Removed <code>ResponseUtils</code>; uses <code>resp.setContentType()</code>; runtime label updated to <code>"Open Liberty"</code></td></tr>
+      <tr><td><code>web/TravelServlet.java</code></td><td>Removed <code>ResponseUtils</code>; uses <code>resp.setContentType()</code> in both <code>doGet</code> and <code>doPost</code></td></tr>
+      <tr><td><code>WEB-INF/web.xml</code></td><td>Schema updated Servlet 3.1 &#8594; Servlet 4.0</td></tr>
+      <tr><td><code>webapp/index.html</code></td><td>Pill labels: <em>Legacy Java EE 7 / IBM WebSphere 9 / Java 8</em> &#8594; <em>Jakarta EE 8 / Open Liberty / Java 17</em></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Files Removed</h2>
+  <table>
+    <thead><tr><th>File</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td><code>legacy-ear/pom.xml</code></td><td>EAR module removed from Maven reactor; single WAR is sufficient for Open Liberty</td></tr>
+      <tr><td><code>legacy-ear/src/.../META-INF/application.xml</code></td><td>Java EE 7 EAR descriptor; no longer applicable</td></tr>
+      <tr><td><code>WEB-INF/ibm-web-bnd.xml</code></td><td>IBM-only security role binding</td></tr>
+      <tr><td><code>WEB-INF/ibm-web-ext.xml</code></td><td>IBM-only web container extension</td></tr>
+      <tr><td><code>WEB-INF/ibm-metadata.xml</code></td><td>IBM-only informational metadata</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Files Created</h2>
+  <table>
+    <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>legacy-web/src/main/liberty/config/server.xml</code></td><td>Open Liberty server: <code>servlet-4.0</code> feature, HTTP port 9080, context root <code>/iss-travel</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Files Not Changed</h2>
+  <p class="section-intro">No WebSphere or Java EE coupling — carried forward unchanged.</p>
+  <table>
+    <thead><tr><th>File</th></tr></thead>
+    <tbody>
+      <tr><td><code>model/TravelRequest.java</code></td></tr>
+      <tr><td><code>repository/TravelRepository.java</code></td></tr>
+      <tr><td><code>util/JsonUtil.java</code></td></tr>
+      <tr><td><code>repository/TravelRepositoryTest.java</code></td></tr>
+      <tr><td><code>webapp/main.js</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Java 8 &#8594; Java 17 Changes</h2>
+  <table>
+    <thead><tr><th>Location</th><th>Before</th><th>After</th></tr></thead>
+    <tbody>
+      <tr><td><code>pom.xml</code> properties</td><td><code>source/target = 1.8</code></td><td><code>source/target = 17</code></td></tr>
+      <tr><td><code>legacy-web/pom.xml</code> compiler plugin</td><td><code>&lt;source&gt;1.8&lt;/source&gt; &lt;target&gt;1.8&lt;/target&gt;</code></td><td><code>&lt;release&gt;17&lt;/release&gt;</code></td></tr>
+      <tr><td>Runtime (verified)</td><td>N/A (build failed before runtime)</td><td><code>java.version = 17.0.20.1</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>WebSphere &#8594; Open Liberty Changes</h2>
+  <table>
+    <thead><tr><th>Legacy (WebSphere)</th><th>Modern (Open Liberty)</th></tr></thead>
+    <tbody>
+      <tr><td><code>ResponseUtils.setContentType(resp, "application/json")</code></td><td><code>resp.setContentType("application/json")</code></td></tr>
+      <tr><td><code>WSSecurityHelper.getCallerSubject()</code></td><td>Returns literal <code>"system"</code></td></tr>
+      <tr><td><code>ServerName.getFullName()</code></td><td><code>System.getProperty("wlp.server.name", "open-liberty")</code></td></tr>
+      <tr><td><code>WsnInitialContextFactory</code></td><td><code>new InitialContext()</code></td></tr>
+      <tr><td>IBM deployment descriptors (3 files)</td><td>Deleted</td></tr>
+      <tr><td>EAR packaging + <code>maven-ear-plugin</code></td><td>Removed; WAR deployed directly</td></tr>
+      <tr><td>No server configuration file</td><td><code>server.xml</code> with <code>servlet-4.0</code></td></tr>
+      <tr><td>No Liberty Maven plugin</td><td><code>liberty-maven-plugin:3.10.3</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Dependencies Removed</h2>
+  <table>
+    <thead><tr><th>Dependency</th><th>Scope</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td><code>com.ibm.websphere:was-public-api:9.0</code></td><td>system</td><td>Root cause of build failure; all call sites replaced</td></tr>
+      <tr><td><code>javax:javaee-api:7.0</code></td><td>provided</td><td>Replaced by Jakarta EE 8 Web API</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Dependencies Added</h2>
+  <table>
+    <thead><tr><th>Dependency</th><th>Scope</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>jakarta.platform:jakarta.jakartaee-web-api:8.0.0</code></td><td>provided</td><td>Jakarta EE 8 / Servlet 4.0 API; retains <code>javax.servlet.*</code> namespace</td></tr>
+      <tr><td><code>io.openliberty.tools:liberty-maven-plugin:3.10.3</code></td><td>plugin</td><td>Open Liberty lifecycle goals</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Maven Build Results</h2>
+  <h3>Before (Java 17, WAS_HOME unset)</h3>
+  <pre>[ERROR] 'dependencies.dependency.systemPath' for
+  com.ibm.websphere:was-public-api:jar
+  must specify an absolute path but is
+  ${env.WAS_HOME}/plugins/com.ibm.ws.runtime.jar
+BUILD FAILURE</pre>
+
+  <h3>After (Java 17, Open Liberty)</h3>
+  <pre>[INFO] Compiling 8 source files with javac [debug release 17] to target/classes
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Building war: .../target/iss-travel.war
+[INFO] BUILD SUCCESS
+[INFO] Total time: 34.647 s</pre>
+
+  <h2>API Verification Results</h2>
+  <p class="section-intro">All endpoints tested live against <code>http://localhost:9080/iss-travel/</code> on Open Liberty 26.0.0.9 with Java 17.</p>
+
+  <div class="api-row">
+    <span class="method get">GET</span>
+    <span class="api-path">/api/health</span>
+    <span class="api-status">&#10003; HTTP 200</span>
+  </div>
+  <pre>{"status":"UP","runtime":"Open Liberty","server":"iss-travel","java":"17.0.20.1"}</pre>
+
+  <div class="api-row">
+    <span class="method get">GET</span>
+    <span class="api-path">/api/trips</span>
+    <span class="api-status">&#10003; HTTP 200 — 4 seeded records</span>
+  </div>
+  <pre>[{"id":1001,"traveler":"Elena Torres","destination":"Houston, TX","purpose":"Mission operations readiness review","departureDate":"2026-10-03","status":"APPROVED"},
+ {"id":1002,"traveler":"Marcus Lee","destination":"Cape Canaveral, FL","purpose":"Crew launch support","departureDate":"2026-10-11","status":"PENDING"},
+ {"id":1003,"traveler":"Aisha Rahman","destination":"Cologne, Germany","purpose":"ESA payload integration workshop","departureDate":"2026-11-02","status":"APPROVED"},
+ {"id":1004,"traveler":"Daniel Novak","destination":"Tsukuba, Japan","purpose":"JAXA systems coordination","departureDate":"2026-11-14","status":"REVIEW"}]</pre>
+
+  <div class="api-row">
+    <span class="method get">GET</span>
+    <span class="api-path">/api/trips?id=1001</span>
+    <span class="api-status">&#10003; HTTP 200</span>
+  </div>
+  <pre>{"id":1001,"traveler":"Elena Torres","destination":"Houston, TX","purpose":"Mission operations readiness review","departureDate":"2026-10-03","status":"APPROVED"}</pre>
+
+  <div class="api-row">
+    <span class="method post">POST</span>
+    <span class="api-path">/api/trips</span>
+    <span class="api-status">&#10003; HTTP 201 — new record id 1005</span>
+  </div>
+  <pre>Request:  {"traveler":"Sarah Mitchell","destination":"Houston, TX","purpose":"Mission readiness review","departureDate":"2027-01-15","status":"PENDING"}
+Response: {"id":1005,"traveler":"Sarah Mitchell","destination":"Houston, TX","purpose":"Mission readiness review","departureDate":"2027-01-15","status":"PENDING"}</pre>
+
+  <div class="api-row">
+    <span class="method get">GET</span>
+    <span class="api-path">/api/trips (after POST)</span>
+    <span class="api-status">&#10003; HTTP 200 — id 1005 visible</span>
+  </div>
+  <pre>... id: 1005, traveler: "Sarah Mitchell" — present immediately after POST &#10003;</pre>
+
+  <h2>IBM Reference Scan</h2>
+  <table>
+    <thead><tr><th>Pattern</th><th>Result (source files)</th></tr></thead>
+    <tbody>
+      <tr><td><code>com.ibm.websphere.*</code></td><td><span class="badge badge-pass">NONE FOUND</span></td></tr>
+      <tr><td><code>com.ibm.ws.*</code></td><td><span class="badge badge-pass">NONE FOUND</span></td></tr>
+      <tr><td><code>WAS_HOME</code> in POMs / Java</td><td><span class="badge badge-pass">NONE FOUND</span> (docs only)</td></tr>
+      <tr><td><code>was-public-api</code> / <code>ws.runtime.jar</code></td><td><span class="badge badge-pass">NONE FOUND</span></td></tr>
+      <tr><td><code>ibm-web-bnd.xml</code></td><td><span class="badge badge-pass">DELETED</span></td></tr>
+      <tr><td><code>ibm-web-ext.xml</code></td><td><span class="badge badge-pass">DELETED</span></td></tr>
+      <tr><td><code>ibm-metadata.xml</code></td><td><span class="badge badge-pass">DELETED</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Acceptance Checklist</h2>
+  <table>
+    <thead><tr><th>Criterion</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td><code>mvn clean package</code> on Java 17</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td>No <code>com.ibm.websphere.*</code> import</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td>No <code>com.ibm.ws.*</code> import</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td>No <code>was-public-api</code> dependency</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td>No IBM deployment descriptor</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td>No EAR artifact</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td>Runs on Open Liberty</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td><code>GET /api/health</code> &#8594; 200</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td><code>GET /api/trips</code> &#8594; 4 records</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td><code>GET /api/trips?id=1001</code> &#8594; correct record</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td><code>POST /api/trips</code> &#8594; 201 + new record</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td>New record visible in subsequent GET</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td><code>index.html</code> / <code>main.js</code> unchanged</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+      <tr><td><code>TravelRepositoryTest</code> passes</td><td><span class="badge badge-pass">&#10003; PASS</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Remaining Risks &amp; Follow-up Items</h2>
+  <table>
+    <thead><tr><th>Item</th><th>Risk</th><th>Recommendation</th></tr></thead>
+    <tbody>
+      <tr><td>In-memory data store</td><td>Low</td><td>Data resets on server restart (intentional for lab). Production migration would add JPA + a database.</td></tr>
+      <tr><td><code>javax.*</code> namespace (EE 8)</td><td>Low</td><td>Targets Servlet 4.0 to avoid import renames. Future step to Jakarta EE 10 requires <code>javax.*</code> &#8594; <code>jakarta.*</code>.</td></tr>
+      <tr><td><code>legacy-ear/</code> directory on disk</td><td>None</td><td>Excluded from Maven reactor; produces no artifact. Can be deleted from VCS.</td></tr>
+      <tr><td><code>X-Legacy-User</code> response header</td><td>None</td><td>Now returns static <code>"system"</code>. No client depends on it; can be removed.</td></tr>
+      <tr><td>JUnit 4 test suite</td><td>None</td><td>Compatible with Java 17. JUnit 5 migration recommended for new tests.</td></tr>
+      <tr><td><code>featureUtility</code> required on minimal Liberty kernel</td><td>Low</td><td>Add <code>installServerFeatures</code> goal to <code>prepare-package</code> phase for CI automation.</td></tr>
+      <tr><td>No HTTPS / TLS configuration</td><td>Low</td><td>Port 9443 declared but no keystore configured. Add <code>&lt;keyStore&gt;</code> for production.</td></tr>
+    </tbody>
+  </table>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>
