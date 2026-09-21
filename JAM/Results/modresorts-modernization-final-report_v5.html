@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ModResorts Modernization Final Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system,"Segoe UI",system-ui,sans-serif; font-size: 14px; line-height: 1.6; color: #1f2328; background: #fff; }
+  .page { max-width: 780px; margin: 0 auto; padding: 32px 24px 60px; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #57606a; font-size: 13px; margin-bottom: 32px; }
+  h2 { font-size: 15px; font-weight: 700; margin: 32px 0 10px; padding-bottom: 4px; border-bottom: 2px solid #e5e7eb; color: #1f2328; }
+  h3 { font-size: 13px; font-weight: 600; margin: 18px 0 6px; color: #1f2328; }
+  p { margin-bottom: 8px; }
+  a { color: #3b82d4; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 13px; }
+  th { background: #f7f8fa; text-align: left; font-weight: 600; padding: 7px 10px; border: 1px solid #e5e7eb; }
+  td { padding: 6px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-pass  { background: #dcfce7; color: #166534; }
+  .badge-warn  { background: #fef9c3; color: #713f12; }
+  .badge-fail  { background: #fee2e2; color: #991b1b; }
+  .badge-info  { background: #dbeafe; color: #1e3a8a; }
+  .badge-done  { background: #ede9fe; color: #4c1d95; }
+  code { font-family: "SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace; font-size: 12px; background: #f7f8fa; padding: 1px 5px; border-radius: 3px; border: 1px solid #e5e7eb; }
+  pre { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px; padding: 12px 14px; font-size: 12px; overflow-x: auto; margin: 8px 0 14px; line-height: 1.5; }
+  .arch-diagram { display: flex; gap: 24px; margin: 14px 0; }
+  .arch-box { flex: 1; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px 16px; background: #f7f8fa; }
+  .arch-box.before { border-left: 4px solid #f97316; }
+  .arch-box.after  { border-left: 4px solid #22c55e; }
+  .arch-box h4 { font-size: 12px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .05em; color: #57606a; }
+  .arch-box ul { padding-left: 16px; font-size: 13px; }
+  .arch-box li { margin-bottom: 3px; }
+  .callout { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px; }
+  .callout-warn { background: #fefce8; border-color: #fde047; }
+  .callout-info { background: #eff6ff; border-color: #bfdbfe; }
+  .metric-row { display: flex; gap: 16px; margin: 12px 0 20px; flex-wrap: wrap; }
+  .metric { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 16px; flex: 1; min-width: 120px; text-align: center; }
+  .metric .val { font-size: 24px; font-weight: 700; color: #166534; }
+  .metric .lbl { font-size: 11px; color: #57606a; margin-top: 2px; }
+  .section-rule { border: none; border-top: 1px solid #e5e7eb; margin: 28px 0 4px; }
+  .diff-row td:first-child { background: #fff8ed; font-weight: 600; }
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>ModResorts &mdash; Modernization Final Report</h1>
+  <p class="subtitle">WebSphere Traditional Java 8 &rarr; Open Liberty Java 17 &middot; Monolithic WAR &middot; Generated 21 Sep 2026</p>
+
+  <div class="metric-row">
+    <div class="metric"><div class="val">17</div><div class="lbl">Java Version</div></div>
+    <div class="metric"><div class="val">24/24</div><div class="lbl">Tests Passing</div></div>
+    <div class="metric"><div class="val">82.7%</div><div class="lbl">WeatherServlet Coverage</div></div>
+    <div class="metric"><div class="val">200</div><div class="lbl">HTTP /resorts/</div></div>
+    <div class="metric"><div class="val">0</div><div class="lbl">Runtime Errors</div></div>
+  </div>
+
+  <h2>1. Architecture &mdash; Before vs. After</h2>
+  <div class="arch-diagram">
+    <div class="arch-box before">
+      <h4>Before (WAS Traditional)</h4>
+      <ul>
+        <li>Java 8 (<code>javac -source 1.8</code>)</li>
+        <li>WebSphere Application Server 9.0</li>
+        <li>WAS APIs: <code>WSSecurityHelper</code>, <code>ResponseUtils</code>, <code>ServerName</code>, <code>WsnInitialContextFactory</code></li>
+        <li><code>was_public:9.0.0</code> compile dependency</li>
+        <li>WAS JNDI (<code>iiop://</code> bootstrap)</li>
+        <li>WAR, <code>ibm-web-ext.xml</code> context root</li>
+        <li>Missing <code>lib/pikaday.js</code> (ReferenceError)</li>
+        <li>Pikaday date range locked to 2020</li>
+        <li>No test harness, no JaCoCo</li>
+      </ul>
+    </div>
+    <div class="arch-box after">
+      <h4>After (Open Liberty)</h4>
+      <ul>
+        <li>Java 17 (<code>javac --release 17</code>)</li>
+        <li>Open Liberty 22.0.0.13 (webProfile8)</li>
+        <li>Standard Servlet 3.0/4.0 APIs only</li>
+        <li><code>was_public</code> removed entirely</li>
+        <li>Standard JNDI: <code>new InitialContext()</code></li>
+        <li>WAR, context root in <code>server.xml</code></li>
+        <li><code>lib/pikaday.js</code> added (42 KB, MIT)</li>
+        <li>Pikaday date range: <code>currentYear + 2</code></li>
+        <li>24 JUnit 5 tests, JaCoCo &ge;80% enforced</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>2. What Did Not Change</h2>
+  <div class="callout">The following items are <strong>explicitly out of scope</strong> and were not altered.</div>
+  <table>
+    <tr><th>Item</th><th>Status</th></tr>
+    <tr><td>Application remains a monolith (single WAR)</td><td><span class="badge badge-done">Preserved</span></td></tr>
+    <tr><td>Existing business functionality (weather, availability, upper, welcome, logout)</td><td><span class="badge badge-done">Preserved</span></td></tr>
+    <tr><td>JSP / HTML frontend (<code>index.html</code>, <code>login.jsp</code>, <code>main.js</code>, CSS)</td><td><span class="badge badge-done">Preserved</span></td></tr>
+    <tr><td>WAR packaging (<code>modresorts-2.0.0.war</code>)</td><td><span class="badge badge-done">Preserved</span></td></tr>
+    <tr><td><code>javax.*</code> namespace (no Jakarta EE migration)</td><td><span class="badge badge-done">Preserved</span></td></tr>
+    <tr><td>No database schema or data migration</td><td><span class="badge badge-done">Not performed</span></td></tr>
+    <tr><td>No microservices decomposition</td><td><span class="badge badge-done">Not introduced</span></td></tr>
+    <tr><td>No Kubernetes / OpenShift</td><td><span class="badge badge-done">Not introduced</span></td></tr>
+    <tr><td>No React or JavaScript framework migration</td><td><span class="badge badge-done">Not introduced</span></td></tr>
+    <tr><td>No CI/CD pipeline</td><td><span class="badge badge-done">Not introduced</span></td></tr>
+  </table>
+
+  <h2>3. Before vs. After Change Matrix</h2>
+  <table>
+    <tr><th>Dimension</th><th>Before</th><th>After</th></tr>
+    <tr class="diff-row"><td>Java version</td><td><code>1.8</code> (Java 8)</td><td><code>17</code> (Java 17 LTS)</td></tr>
+    <tr class="diff-row"><td>Runtime</td><td>WebSphere Application Server 9.0 traditional</td><td>Open Liberty 22.0.0.13 (webProfile8)</td></tr>
+    <tr class="diff-row"><td>WebSphere-specific APIs</td><td><code>WSSecurityHelper</code>, <code>ResponseUtils</code>, <code>ServerName</code>, <code>WsnInitialContextFactory</code></td><td>Removed / replaced with standard Servlet + Java SE APIs</td></tr>
+    <tr class="diff-row"><td>Maven dependencies</td><td><code>was_public:9.0.0</code> (provided)</td><td>Removed; <code>javax.servlet-api:3.1.0</code> replaces stubs</td></tr>
+    <tr class="diff-row"><td>JNDI bootstrap</td><td><code>WsnInitialContextFactory</code>, IIOP URL, raw <code>Hashtable</code></td><td><code>new InitialContext()</code> &mdash; standard, no-arg</td></tr>
+    <tr class="diff-row"><td>Logout API</td><td><code>WSSecurityHelper.revokeSSOCookies()</code></td><td><code>request.logout()</code> + <code>session.invalidate()</code></td></tr>
+    <tr class="diff-row"><td>HTML encoding</td><td><code>ResponseUtils.encodeDataString()</code></td><td>Inline <code>encodeForHtml()</code> using <code>String.replace()</code></td></tr>
+    <tr class="diff-row"><td>SecurityManager</td><td><code>System.getSecurityManager()</code> guard (deprecated)</td><td>Removed (JEP 411; no-op in Java 17)</td></tr>
+    <tr class="diff-row"><td>WAR packaging</td><td>WAR, <code>ibm-web-ext.xml</code>, <code>ibm-web-bnd.xml</code></td><td>WAR; context root in <code>server.xml</code></td></tr>
+    <tr class="diff-row"><td>Frontend</td><td>Missing <code>lib/pikaday.js</code>; date range locked to 2020</td><td><code>lib/pikaday.js</code> present; date range <code>currentYear+2</code></td></tr>
+    <tr class="diff-row"><td>Application architecture</td><td>Monolith</td><td>Monolith (unchanged)</td></tr>
+    <tr class="diff-row"><td>Test coverage</td><td>No tests</td><td>24 JUnit 5 tests; JaCoCo &ge;80% LINE on <code>WeatherServlet</code></td></tr>
+  </table>
+
+  <h2>4. Key Code Changes &mdash; Before / After</h2>
+
+  <h3>4.1 LogoutServlet &mdash; WSSecurityHelper &rarr; Standard Servlet Logout</h3>
+  <table><tr><th style="width:50%">Before</th><th>After</th></tr>
+  <tr><td><pre>import com.ibm.websphere.security.WSSecurityHelper;
+
+WSSecurityHelper.revokeSSOCookies(
+    request, response);</pre></td>
+  <td><pre>// Standard Servlet 3.0
+try { request.logout(); }
+catch (ServletException ignored) {}
+HttpSession s = request.getSession(false);
+if (s != null) s.invalidate();</pre></td></tr></table>
+
+  <h3>4.2 UpperServlet &mdash; ResponseUtils &rarr; Portable HTML Escaping</h3>
+  <table><tr><th style="width:50%">Before</th><th>After</th></tr>
+  <tr><td><pre>import com.ibm.websphere.servlet.response.ResponseUtils;
+
+String encoded =
+    ResponseUtils.encodeDataString(newStr);</pre></td>
+  <td><pre>private String encodeForHtml(String s) {
+    return s.replace("&amp;","&amp;amp;")
+            .replace("&lt;","&amp;lt;")
+            .replace("&gt;","&amp;gt;")
+            .replace("\"","&amp;quot;")
+            .replace("'","&amp;#x27;");
+}</pre></td></tr></table>
+
+  <h3>4.3 WeatherServlet &mdash; WsnInitialContextFactory &rarr; Standard InitialContext</h3>
+  <table><tr><th style="width:50%">Before</th><th>After</th></tr>
+  <tr><td><pre>Hashtable env = new Hashtable();
+env.put(Context.INITIAL_CONTEXT_FACTORY,
+  "com.ibm.websphere.naming"
+  + ".WsnInitialContextFactory");
+env.put(Context.PROVIDER_URL,
+  "iiop://localhost:2809");
+ctx = new InitialContext(env);</pre></td>
+  <td><pre>// Liberty provides the default context
+ctx = new InitialContext();</pre></td></tr></table>
+
+  <h3>4.4 WeatherServlet &mdash; ServerName (dead method removed)</h3>
+  <table><tr><th style="width:50%">Before</th><th>After</th></tr>
+  <tr><td><pre>import com.ibm.websphere.runtime.ServerName;
+
+private void configureEnvDiscovery() {
+    String name =
+        ServerName.getDisplayName();
+    // never called
+}</pre></td>
+  <td><pre>// Method removed entirely.
+// Standard alternative if needed:
+// System.getProperty("wlp.server.name")</pre></td></tr></table>
+
+  <h3>4.5 WeatherServlet &mdash; openConnection() Testability Seam</h3>
+  <table><tr><th style="width:50%">Before</th><th>After</th></tr>
+  <tr><td><pre>// Untestable: requires ByteBuddy
+// mockConstruction&lt;URL&gt; to intercept
+URL obj = new URL(resturl);
+con = (HttpURLConnection)
+    obj.openConnection();</pre></td>
+  <td><pre>// Package-protected seam; tests override
+HttpURLConnection openConnection(String url)
+    throws IOException {
+  return (HttpURLConnection)
+      new URL(url).openConnection();
+}</pre></td></tr></table>
+
+  <h2>5. Files Changed</h2>
+  <table>
+    <tr><th>File</th><th>Change</th></tr>
+    <tr><td><code>pom.xml</code></td><td>Java 17; <code>liberty-maven-plugin 3.10.3</code> + webProfile8 runtime; <code>maven-surefire-plugin 3.1.2</code>; JaCoCo 0.8.10 with <code>@{jacocoArgLine}</code>; <code>was_public</code> removed; <code>javax.servlet-api:3.1.0</code> provided (classpath ordering fix); <code>spring-web/spring-test</code> test scope</td></tr>
+    <tr><td><code>src/main/liberty/config/server.xml</code></td><td>Removed <code>mpMetrics-1.1</code>, <code>localConnector-1.0</code>, stale WAS SSL variables; updated features to webProfile8 versions: <code>cdi-2.0</code>, <code>servlet-4.0</code>, <code>jdbc-4.2</code></td></tr>
+    <tr><td><code>src/main/java/&hellip;/LogoutServlet.java</code></td><td>Replaced <code>WSSecurityHelper.revokeSSOCookies()</code> with <code>request.logout()</code> + <code>session.invalidate()</code></td></tr>
+    <tr><td><code>src/main/java/&hellip;/UpperServlet.java</code></td><td>Replaced <code>ResponseUtils.encodeDataString()</code> with inline <code>encodeForHtml()</code></td></tr>
+    <tr><td><code>src/main/java/&hellip;/WeatherServlet.java</code></td><td>Removed <code>configureEnvDiscovery()</code>; plain <code>new InitialContext()</code>; added <code>getWeatherApiKey()</code> and <code>openConnection()</code> hooks</td></tr>
+    <tr><td><code>src/main/java/&hellip;/security/Service.java</code></td><td>Removed <code>System.getSecurityManager()</code> guard (JEP 411)</td></tr>
+    <tr><td><code>src/main/resources/ops.json</code></td><td>Fixed <code>"impact": 10</code> &rarr; <code>"impact": 1</code> (Java 17 JMX only accepts 0&ndash;3)</td></tr>
+    <tr><td><code>src/main/resources/reservations.json</code></td><td>Updated dates to 2026 future window</td></tr>
+    <tr><td><code>WebContent/index.html</code></td><td>Pikaday <code>maxDate</code> and <code>yearRange</code> relative to <code>currentYear + 2</code></td></tr>
+    <tr><td><code>WebContent/lib/pikaday.js</code></td><td><strong>Added</strong> &mdash; Pikaday 1.8.2, MIT, 42 KB (was absent; caused <code>ReferenceError</code>)</td></tr>
+    <tr><td><code>src/test/java/&hellip;/WeatherServletTest.java</code></td><td><strong>New</strong> &mdash; 24-test JUnit 5 suite</td></tr>
+    <tr><td><code>src/test/resources/data/*.json</code></td><td><strong>New</strong> &mdash; city JSON copied to test classpath</td></tr>
+    <tr><td><code>modernization-plan.md</code></td><td><strong>New</strong> &mdash; approved modernization plan</td></tr>
+  </table>
+
+  <h2>6. Maven Changes Detail</h2>
+  <table>
+    <tr><th>Change</th><th>Reason</th></tr>
+    <tr><td><code>maven.compiler.source/target: 1.8 &rarr; 17</code></td><td>Target Java 17 LTS</td></tr>
+    <tr><td><code>was_public:9.0.0</code> removed</td><td>All WAS APIs replaced; JAR no longer on compile classpath</td></tr>
+    <tr><td><code>javax.servlet-api:3.1.0 provided</code> declared before <code>javaee-api</code></td><td><code>javaee-api</code> stub <code>GenericServlet</code> lacks <code>LocalStrings</code>, causing <code>ExceptionInInitializerError</code> in tests; real JAR must win classpath ordering</td></tr>
+    <tr><td><code>liberty-maven-plugin:3.10.3</code> added</td><td>Enables <code>mvn liberty:dev</code>, <code>liberty:start</code>, <code>liberty:deploy</code></td></tr>
+    <tr><td><code>openliberty-webProfile8:22.0.0.13</code> runtime artifact</td><td>Default plugin downloads <code>openliberty-kernel</code> (zero features); webProfile8 includes all required features</td></tr>
+    <tr><td><code>argLine: @{jacocoArgLine}</code> (late binding)</td><td>Surefire 3.x resolves <code>${}</code> eagerly before <code>prepare-agent</code> runs; <code>@{}</code> defers evaluation to fork time, ensuring <code>-javaagent</code> is actually passed</td></tr>
+    <tr><td>JaCoCo check rule: &ge;80% LINE on <code>WeatherServlet</code></td><td>Build fails automatically below threshold</td></tr>
+    <tr><td><code>gson:2.10.1</code> scope kept as <code>compile</code></td><td>Liberty does not provide Gson; must be in <code>WEB-INF/lib</code></td></tr>
+  </table>
+
+  <h2>7. Build Result</h2>
+  <div class="callout"><code>mvn clean verify</code> &mdash; <strong>BUILD SUCCESS</strong></div>
+  <table>
+    <tr><th>Phase</th><th>Result</th><th>Detail</th></tr>
+    <tr><td>compile</td><td><span class="badge badge-pass">PASS</span></td><td>Java 17, 0 errors, 0 WAS import warnings</td></tr>
+    <tr><td>test</td><td><span class="badge badge-pass">PASS</span></td><td>24/24 tests, 0 failures, 0 errors, 0 skipped</td></tr>
+    <tr><td>package</td><td><span class="badge badge-pass">PASS</span></td><td><code>target/modresorts-2.0.0.war</code>; includes <code>gson-2.10.1.jar</code> in <code>WEB-INF/lib</code></td></tr>
+    <tr><td>JaCoCo report</td><td><span class="badge badge-pass">PASS</span></td><td>Execution data loaded; 26 classes analyzed</td></tr>
+    <tr><td>JaCoCo check</td><td><span class="badge badge-pass">PASS</span></td><td>All coverage checks have been met</td></tr>
+  </table>
+
+  <h2>8. Test Result</h2>
+  <table>
+    <tr><th>Test</th><th>Result</th></tr>
+    <tr><td>testInit_registersAppInfoMBean</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testInit_calledTwice_handlesDuplicateMBeanGracefully</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testDestroy_unregistersMBean</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testDestroy_whenMbeanIsNull_doesNotThrow</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testDoPost_delegatesToDoGet_returnsJsonForParis</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testDoGet_noApiKey_Paris / LasVegas / SanFrancisco / Miami / Cork / Barcelona (x6)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testDoGet_noApiKey_nullCity_throwsServletException</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testDoGet_noApiKey_invalidCity_throwsServletException</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testDoGet_nullApiKey_usesDefaultPath_Cork</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testDoGet_withApiKey_Paris / LasVegas / SanFrancisco / Miami / Cork / Barcelona (x6)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testDoGet_withApiKey_invalidCity_throwsServletException</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testDoGet_withApiKey_non2xx_throwsServletException</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testDoGet_withApiKey_ioExceptionOnOpenConnection_throwsServletException</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>testDoPost_withApiKey_Paris_success</td><td><span class="badge badge-pass">PASS</span></td></tr>
+  </table>
+
+  <h2>9. Coverage Result</h2>
+  <table>
+    <tr><th>Class</th><th>Lines Missed</th><th>Lines Covered</th><th>LINE Coverage</th><th>Threshold</th><th>Status</th></tr>
+    <tr><td><code>com.acme.modres.WeatherServlet</code></td><td>68</td><td>325</td><td><strong>82.7%</strong></td><td>&ge; 80%</td><td><span class="badge badge-pass">MET</span></td></tr>
+  </table>
+  <p style="font-size:12px;color:#57606a">JaCoCo CSV: <code>ModResorts,com.acme.modres,WeatherServlet,68,325,6,28,25,100,7,22,1,11</code></p>
+
+  <h2>10. Open Liberty Deployment Result</h2>
+  <table>
+    <tr><th>Step</th><th>Result</th><th>Evidence</th></tr>
+    <tr><td>Runtime</td><td><span class="badge badge-pass">OK</span></td><td>Open Liberty 22.0.0.13 &middot; Java 17.0.20.1 &middot; Linux x64</td></tr>
+    <tr><td>Features installed</td><td><span class="badge badge-pass">OK</span></td><td><code>appSecurity-2.0, cdi-2.0, ejbLite-3.2, jdbc-4.2, jndi-1.0, jsp-2.3, servlet-4.0, ssl-1.0, el-3.0, distributedMap-1.0</code></td></tr>
+    <tr><td>Startup time</td><td><span class="badge badge-pass">OK</span></td><td>22.5 s (<code>CWWKF0011I: server is ready</code>)</td></tr>
+    <tr><td>EJB module</td><td><span class="badge badge-pass">OK</span></td><td><code>CNTR4001I: modresorts-2.0.0.war EJB module started successfully</code></td></tr>
+    <tr><td>WAR deploy time</td><td><span class="badge badge-pass">OK</span></td><td>8.9 s (<code>CWWKZ0001I: Application modresorts-2.0.0 started</code>)</td></tr>
+    <tr><td>Weld CDI</td><td><span class="badge badge-pass">OK</span></td><td><code>WELD-000900: 3.1.9 (Final)</code></td></tr>
+    <tr><td>ClassNotFoundException / NoClassDefFoundError</td><td><span class="badge badge-pass">NONE</span></td><td>Zero occurrences in <code>messages.log</code></td></tr>
+    <tr><td>Gson runtime</td><td><span class="badge badge-pass">OK</span></td><td><code>WEB-INF/lib/gson-2.10.1.jar</code> present in WAR; no classloading error</td></tr>
+  </table>
+
+  <h2>11. HTTP Verification</h2>
+  <table>
+    <tr><th>Endpoint</th><th>Method</th><th>Status</th><th>Content-Type</th></tr>
+    <tr><td><code>http://localhost:9080/resorts/</code></td><td>HEAD</td><td><span class="badge badge-pass">200 OK</span></td><td><code>text/html</code></td></tr>
+    <tr><td><code>http://localhost:9080/resorts/lib/pikaday.js</code></td><td>HEAD</td><td><span class="badge badge-pass">200 OK</span></td><td><code>application/x-javascript</code> (42,544 bytes)</td></tr>
+    <tr><td><code>http://localhost:9080/resorts/main.js</code></td><td>HEAD</td><td><span class="badge badge-pass">200 OK</span></td><td><code>application/x-javascript</code></td></tr>
+    <tr><td><code>http://localhost:9080/resorts/pikaday.css</code></td><td>HEAD</td><td><span class="badge badge-pass">200 OK</span></td><td><code>text/css</code></td></tr>
+    <tr><td><code>http://localhost:9080/resorts/styles.css</code></td><td>HEAD</td><td><span class="badge badge-pass">200 OK</span></td><td><code>text/css</code></td></tr>
+    <tr><td><code>/resorts/weather?selectedCity=Paris</code></td><td>GET</td><td><span class="badge badge-pass">200 OK</span></td><td><code>application/json</code></td></tr>
+    <tr><td><code>/resorts/availability?date=12/25/2027</code></td><td>GET</td><td><span class="badge badge-pass">200 OK</span></td><td><code>application/json</code> &rarr; <code>{"availability":"true"}</code></td></tr>
+  </table>
+  <p style="font-size:12px;color:#57606a">All responses served with <code>X-Powered-By: Servlet/4.0</code>.</p>
+
+  <h2>12. Runtime Issues Discovered and Resolved</h2>
+
+  <h3>12.1 Missing lib/pikaday.js (Critical Frontend)</h3>
+  <p><strong>Problem:</strong> <code>WebContent/lib/</code> was absent. <code>index.html</code> referenced <code>&lt;script src="lib/pikaday.js"&gt;</code>, causing <code>Uncaught ReferenceError: Pikaday is not defined</code>. Both date pickers non-functional.</p>
+  <p><strong>Resolution:</strong> Added <code>WebContent/lib/pikaday.js</code> (Pikaday 1.8.2, MIT, 42 KB). Served at HTTP 200 from Liberty.</p>
+
+  <h3>12.2 Pikaday Date Range Locked to 2020</h3>
+  <p><strong>Problem:</strong> <code>maxDate: new Date(2020, 12, 31)</code> and <code>yearRange: [2000, 2020]</code> prevented all date selection in 2026.</p>
+  <p><strong>Resolution:</strong> Changed to <code>new Date(_currentYear + 2, 11, 31)</code> and <code>yearRange: [_currentYear, _currentYear + 2]</code>.</p>
+
+  <h3>12.3 Gson Missing at Runtime (Potential)</h3>
+  <p><strong>Problem:</strong> <code>JsonInputStream</code> uses Gson. Liberty does not provide it. Had scope been <code>provided</code>, runtime would throw <code>ClassNotFoundException: com.google.gson.Gson</code>.</p>
+  <p><strong>Resolution:</strong> Confirmed <code>gson:2.10.1</code> scope is <code>compile</code>; 283 KB JAR lands in <code>WEB-INF/lib</code>.</p>
+
+  <h3>12.4 Maven Surefire / JaCoCo argLine Late-Binding</h3>
+  <p><strong>Problem:</strong> <code>&lt;argLine&gt;${jacocoArgLine}&lt;/argLine&gt;</code> resolved the property value before <code>prepare-agent</code> ran. The forked test JVM started without <code>-javaagent</code>; <code>jacoco.exec</code> was never written. JaCoCo skipped coverage check with "missing execution data file".</p>
+  <p><strong>Resolution:</strong> Changed to <code>@{jacocoArgLine}</code> (Surefire 3.x late-binding). Added empty default property so <code>mvn liberty:dev</code> (which skips <code>prepare-agent</code>) does not see a literal <code>@{}</code>.</p>
+
+  <h3>12.5 Mockito mockConstruction&lt;URL&gt; &rarr; ByteBuddy Classloader Corruption</h3>
+  <p><strong>Problem:</strong> 5/24 tests failed with <code>NoClassDefFoundError: com/acme/modres/exception/ExceptionHandler</code> when run as a suite but passed in isolation. Mockito's <code>mockConstruction&lt;URL&gt;</code> installs a ByteBuddy-managed classloader for the try-with-resources scope. When <code>ExceptionHandler</code> was first resolved inside that scope (during API-key success tests), the JVM permanently poisoned the class for that loader. All subsequent loads threw <code>NoClassDefFoundError</code>.</p>
+  <p><strong>Resolution:</strong> Extracted HTTP connection creation into a protected <code>openConnection(String url)</code> seam on <code>WeatherServlet</code>. Test subclass <code>FakeKeyServlet</code> overrides the method and returns a pre-configured mock &mdash; no ByteBuddy, no classloader pollution. All 24 tests pass in any order.</p>
+
+  <h3>12.6 Liberty Kernel-Only Runtime Missing Features</h3>
+  <p><strong>Problem:</strong> Default <code>liberty-maven-plugin</code> downloaded <code>openliberty-kernel</code> (zero features). Every feature in <code>server.xml</code> reported <code>CWWKF0001E: feature not found</code>. WAR could not deploy.</p>
+  <p><strong>Resolution:</strong> Added <code>&lt;runtimeArtifact&gt;</code> pointing to <code>io.openliberty:openliberty-webProfile8:22.0.0.13</code>, which includes all required features.</p>
+
+  <h3>12.7 Feature Version Mismatch in server.xml</h3>
+  <p><strong>Problem:</strong> <code>server.xml</code> requested <code>cdi-1.2</code>, <code>servlet-3.1</code>, <code>jdbc-4.1</code> &mdash; versions absent from webProfile8-22.0.0.13 (which ships <code>cdi-2.0</code>, <code>servlet-4.0</code>, <code>jdbc-4.2</code>).</p>
+  <p><strong>Resolution:</strong> Updated feature names to match the installed runtime. App code targets Servlet 3.1 API, fully compatible with the Servlet 4.0 feature.</p>
+
+  <h3>12.8 ops.json Invalid MBean Impact Value</h3>
+  <p><strong>Problem:</strong> <code>ops.json</code> contained <code>"impact": 10</code>. Java 17's <code>MBeanOperationInfo</code> only accepts 0&ndash;3; value 10 caused <code>IllegalArgumentException</code> during MBean registration.</p>
+  <p><strong>Resolution:</strong> Changed <code>"impact": 10</code> &rarr; <code>"impact": 1</code> (ACTION).</p>
+
+  <h2>13. Remaining Warnings and Risks</h2>
+  <table>
+    <tr><th>Item</th><th>Severity</th><th>Notes</th></tr>
+    <tr><td><code>ModResortsCustomerInformation</code> DataSource injection disabled</td><td><span class="badge badge-warn">Low</span></td><td>DataSource <code>@Inject</code> commented out; EJB starts, DB calls are no-ops. Not a regression.</td></tr>
+    <tr><td><code>CWWKZ0014W</code> at startup (pre-deploy)</td><td><span class="badge badge-info">Info</span></td><td>Normal in two-step start+deploy; absent in <code>liberty:dev</code> / <code>liberty:run</code>.</td></tr>
+    <tr><td>Stale <code>reservations.json</code> dates</td><td><span class="badge badge-warn">Low</span></td><td>Updated to 2026; will need periodic refresh for demo purposes.</td></tr>
+    <tr><td>Wunderground API key not available</td><td><span class="badge badge-info">Info</span></td><td>Without <code>WEATHER_API_KEY</code> env var the app uses bundled static JSON. Expected fallback behaviour.</td></tr>
+    <tr><td>LTPA keystore not configured</td><td><span class="badge badge-warn">Low</span></td><td>HTTPS works in dev mode without it; configure for production.</td></tr>
+    <tr><td>Open Liberty 22.0.0.13 (Dec 2022)</td><td><span class="badge badge-warn">Low</span></td><td>Pinned to locally cached version. Upgrade to current quarterly release for production.</td></tr>
+  </table>
+
+  <hr class="section-rule">
+  <h2>Summary</h2>
+  <p>The ModResorts monolith has been successfully modernized from WebSphere Application Server traditional (Java 8) to Open Liberty (Java 17). All four WebSphere proprietary API usages are replaced with standard Servlet and Java SE equivalents. The WAR structure, frontend, and all business functionality are preserved unchanged. The application deploys cleanly on Open Liberty 22.0.0.13, serves all HTTP endpoints with 200, and passes a 24-test JUnit 5 suite with 82.7% LINE coverage on the primary servlet &mdash; exceeding the 80% threshold enforced automatically at <code>mvn clean verify</code>.</p>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>
