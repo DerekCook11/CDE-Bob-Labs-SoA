@@ -41,7 +41,7 @@ function expandAll(){document.querySelectorAll('details').forEach(d=>d.open=true
 <body>
 <header><div class="header-inner">
   <h1>IBM Bob Java Modernization Lab</h1>
-  <p>ModResorts: Java 8 + Traditional WebSphere → Java 17 + Open Liberty</p>
+  <p>ModResorts App: Java 8 + Traditional WebSphere → Java 17 + Open Liberty</p>
   <div class="actions">
     <button class="primary" onclick="window.print()">Print / Save PDF</button>
     <button class="secondary" onclick="expandAll()">Expand All</button>
@@ -70,7 +70,7 @@ function expandAll(){document.querySelectorAll('details').forEach(d=>d.open=true
 <div class="callout">
 <h3 style="margin-top:0">What This Workshop Is About</h3>
 <p>In this workshop, you will use <b>IBM Bob</b> to modernize a small legacy Java web application called <b>ModResorts</b>.</p>
-<p>ModResorts is a traditional Java web application that represents a simple resort reservation experience. It uses Java servlets, JSP/HTML, configuration files, and older IBM WebSphere-specific APIs and dependencies.</p>
+<p>ModResorts is a traditional Java web application that represents a resort reservation experience. It uses Java servlets, JSP/HTML, configuration files, and older IBM WebSphere-specific APIs and dependencies.</p>
 <p>The application itself is not being redesigned. The goal is to keep the same application and the same business behavior, but move it onto a more modern and portable foundation.</p>
 <p>During the lab, IBM Bob will help you analyze the application, create a modernization plan, migrate from <b>Java 8 to Java 17</b>, replace WebSphere-specific APIs with portable alternatives, update the Maven build, create automated tests, run the application on <b>Open Liberty</b>, verify that it still works, and generate a final before-and-after modernization report.</p>
 <p><b>This is not a rewrite.</b> You are not converting the application to microservices, React, Kubernetes/OpenShift, a new database, or a CI/CD architecture.</p>
@@ -332,7 +332,7 @@ grep -RniE '^import javax\.servlet' src/main/java | head -20
 
 echo
 echo "=== C. WebSphere proprietary APIs ==="
-if grep -RniE 'com\.ibm\.websphere|&lt;artifactId&gt;was_public&lt;/artifactId&gt;' \
+if grep -RniE 'com\.ibm\.websphere|<artifactId>was_public</artifactId>' \
 src/main/java pom.xml; then
   echo "FAIL: WebSphere-specific dependency remains"
 else
@@ -340,17 +340,29 @@ else
 fi
 
 echo
-echo "=== D. Java version and WAR ==="
-mvn help:evaluate -Dexpression=maven.compiler.release -q -DforceStdout
+echo "=== D. Java version ==="
+mvn help:evaluate \
+  -Dexpression=maven.compiler.release \
+  -q -DforceStdout
+
 echo
-javap -verbose target/classes/com/acme/modres/WeatherServlet.class \
+
+javap -verbose \
+  target/classes/com/acme/modres/WeatherServlet.class \
   | grep "major version"
 
-WAR=$(find target -maxdepth 1 -type f -name "*.war" | head -1)
-[ -n "$WAR" ] &amp;&amp; echo "PASS: $WAR" || echo "FAIL: WAR not found"
+echo
+echo "=== E. Check generated WAR ==="
+WAR=$(find target -type f -name "*.war" | head -1)
+
+if [ -n "$WAR" ]; then
+  echo "PASS: Found WAR: $WAR"
+else
+  echo "FAIL: WAR not found"
+fi
 
 echo
-echo "=== E. Check packaged runtime dependencies/assets ==="
+echo "=== F. Check packaged runtime dependencies/assets ==="
 if [ -n "$WAR" ]; then
   jar tf "$WAR" | grep -Ei "gson|pikaday" || true
 else
