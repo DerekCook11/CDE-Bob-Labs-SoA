@@ -4,7 +4,8 @@ This folder contains the IBM Bob Java Modernization lab materials.
 
 ## Lab Guide
 
-> Download the IBM_Bob_Java_Modernization_Lab_ModResorts_FINAL_v5.html file and open it in a browser for the full interactive experience.
+> Download [IBM Bob Java Modernization Lab - ModResorts](./IBM_Bob_Java_Modernization_Lab_ModResorts_FINAL_v5.html)
+> and open it in a browser for the full interactive experience.
 
 ## Files
 
