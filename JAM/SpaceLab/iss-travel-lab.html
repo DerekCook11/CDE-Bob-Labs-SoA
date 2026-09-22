@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ISS Travel App — Java Modernization Lab</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.65;background:#f0f2f5;color:#1f2328}
+
+/* ── sidebar ── */
+#sidebar{position:fixed;top:0;left:0;width:248px;height:100vh;background:#0f2747;color:#fff;overflow-y:auto;z-index:100;display:flex;flex-direction:column}
+#sidebar .logo{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+#sidebar .logo h1{font-size:14px;font-weight:700;line-height:1.3}
+#sidebar .logo p{font-size:11px;opacity:.55;margin-top:3px}
+#sidebar nav{flex:1;padding:8px 0}
+#sidebar nav a{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:12.5px;color:rgba(255,255,255,.7);text-decoration:none;cursor:pointer;transition:background .15s}
+#sidebar nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+#sidebar nav a.active{background:rgba(255,255,255,.14);color:#fff;font-weight:600}
+#sidebar nav a .snum{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.14);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
+#sidebar nav a.done .snum{background:#22c55e}
+#sidebar nav a.active .snum{background:#3b82f6}
+#sidebar .nsec{padding:12px 18px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;opacity:.38}
+#sidebar .prog-wrap{padding:14px 18px 18px;border-top:1px solid rgba(255,255,255,.1)}
+#sidebar .prog-wrap p{font-size:11px;opacity:.55;margin-bottom:5px}
+#sidebar .pbar{height:4px;background:rgba(255,255,255,.14);border-radius:2px}
+#sidebar .pfill{height:100%;background:#22c55e;border-radius:2px;transition:width .4s}
+
+/* ── main ── */
+#main{margin-left:248px;min-height:100vh}
+.view{display:none;padding:36px 40px 80px;max-width:860px}
+.view.active{display:block}
+
+/* ── hero ── */
+.hero{background:#0f2747;color:#fff;border-radius:10px;padding:28px 32px 24px;margin-bottom:26px}
+.hero h2{font-size:20px;font-weight:700;margin-bottom:6px}
+.hero p{font-size:13px;opacity:.8;line-height:1.5}
+.tag-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.tag{background:rgba(255,255,255,.14);border-radius:20px;padding:3px 11px;font-size:12px}
+.tag.arr{background:none;opacity:.5;padding:3px 0}
+
+/* ── cards ── */
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px 20px;margin-bottom:14px}
+.card h3{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#57606a;margin-bottom:10px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.si{display:flex;align-items:flex-start;gap:8px;font-size:13px;margin-bottom:5px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.red{background:#ef4444}.green{background:#22c55e}
+
+/* ── step card ── */
+.step-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:0}
+.step-top{padding:22px 26px 16px;border-bottom:1px solid #f0f2f5}
+.step-num-row{display:flex;align-items:center;gap:13px;margin-bottom:8px}
+.sn{width:34px;height:34px;border-radius:50%;background:#0f2747;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-top h2{font-size:17px;font-weight:700}
+.step-top .why{font-size:13px;color:#57606a;margin-top:4px}
+.step-body{padding:22px 26px 26px}
+.step-body p{font-size:13px;margin-bottom:12px}
+.step-body ul,.step-body ol{padding-left:20px;margin-bottom:12px}
+.step-body li{font-size:13px;margin-bottom:4px}
+
+/* ── prompt box ── */
+.prompt-wrap{position:relative;margin:10px 0 16px}
+.prompt-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#57606a;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.prompt-label span{background:#0f2747;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px}
+.prompt-box{background:#0f172a;border:2px solid #1e3a5f;border-radius:8px;padding:16px 18px;font-family:"SFMono-Regular",Consolas,"Courier New",monospace;font-size:12.5px;line-height:1.65;color:#e2e8f0;white-space:pre-wrap;word-break:break-word;cursor:text;position:relative}
+.copy-btn{position:absolute;top:10px;right:10px;background:#1e3a5f;color:#93c5fd;border:none;border-radius:5px;padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer;transition:background .15s}
+.copy-btn:hover{background:#2563eb;color:#fff}
+.copy-btn.copied{background:#166534;color:#86efac}
+
+/* ── info boxes ── */
+.tip{background:#eff6ff;border-left:3px solid #3b82f6;border-radius:0 6px 6px 0;padding:10px 14px;margin:10px 0 14px;font-size:13px;color:#1e3a5f}
+.warn{background:#fefce8;border-left:3px solid #eab308;border-radius:0 6px 6px 0;padding:10px 14px;margin:10px 0 14px;font-size:13px;color:#713f12}
+.success-box{background:#f0fdf4;border-left:3px solid #22c55e;border-radius:0 6px 6px 0;padding:10px 14px;margin:10px 0 14px;font-size:13px;color:#166534}
+.what-happened{background:#f8fafc;border:1px solid #cbd5e1;border-left:4px solid #0f2747;border-radius:0 7px 7px 0;padding:14px 16px;margin:16px 0;font-size:13px;color:#334155}
+.what-happened strong.title{display:block;color:#0f2747;font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.what-happened p{margin:0 0 8px}
+.what-happened p:last-child{margin-bottom:0}
+
+/* ── expected output ── */
+.expected-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#57606a;margin-bottom:6px}
+.output-box{background:#0f172a;color:#e2e8f0;border-radius:7px;padding:13px 16px;font-family:"SFMono-Regular",Consolas,"Courier New",monospace;font-size:12px;line-height:1.6;overflow-x:auto;margin:6px 0 14px;white-space:pre}
+.hi{color:#fde68a}.ok{color:#86efac}.er{color:#f87171}.cm{color:#94a3b8}
+
+/* ── code inline ── */
+code{font-family:"SFMono-Regular",Consolas,"Courier New",monospace;font-size:12px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:3px;padding:1px 5px;color:#1e293b}
+
+/* ── section heading ── */
+.sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#57606a;margin:24px 0 10px;padding-bottom:5px;border-bottom:1px solid #e5e7eb}
+
+/* ── tables ── */
+table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px}
+th{background:#f7f8fa;text-align:left;padding:8px 10px;border:1px solid #e5e7eb;font-weight:600}
+td{padding:7px 10px;border:1px solid #e5e7eb;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+
+/* ── badges ── */
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700}
+.bd{background:#fee2e2;color:#991b1b}
+.ba{background:#d1fae5;color:#065f46}
+.bm{background:#dbeafe;color:#1e40af}
+.pass{color:#065f46;font-weight:700}
+
+/* ── checklist ── */
+.chk-list{list-style:none;padding:0;margin-bottom:14px}
+.chk-list li{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f0f2f5;font-size:13px}
+.chk-list li:last-child{border-bottom:none}
+.chkbox{width:20px;height:20px;border-radius:4px;border:2px solid #d1d5db;background:#fff;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .15s}
+.chkbox.on{background:#0f2747;border-color:#0f2747}
+.chkbox.on::after{content:"✓";color:#fff;font-size:12px;font-weight:700}
+
+/* ── accordion ── */
+.acc{border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:10px}
+.acc-hd{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fff;cursor:pointer;font-size:13px;font-weight:600}
+.acc-hd:hover{background:#f7f8fa}
+.acc-arr{font-size:11px;color:#57606a;transition:transform .2s}
+.acc-bd{display:none;padding:12px 16px 14px;background:#fafbfc;border-top:1px solid #e5e7eb;font-size:13px;color:#374151;line-height:1.6}
+.acc-bd.open{display:block}
+
+/* ── step footer ── */
+.step-foot{display:flex;justify-content:space-between;align-items:center;padding:16px 26px;border-top:1px solid #f0f2f5}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.bp{background:#0f2747;color:#fff}
+.bs{background:#e5e7eb;color:#1f2328}
+.bg{background:#166534;color:#fff}
+.bx{background:transparent;color:#57606a;border:1px solid #e5e7eb}
+
+/* ── completion ── */
+.done-banner{background:#f0fdf4;border:2px solid #22c55e;border-radius:10px;padding:28px 32px;text-align:center;margin-bottom:24px}
+.done-banner h2{font-size:22px;font-weight:700;color:#166534;margin-bottom:6px}
+.done-banner p{font-size:13px;color:#374151}
+
+/* ── bob hint bar ── */
+.bob-bar{background:#faf5ff;border:1px solid #d8b4fe;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px}
+.bob-icon{width:28px;height:28px;border-radius:50%;background:#7c3aed;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.bob-bar p{font-size:13px;color:#4c1d95;line-height:1.5}
+
+@media(max-width:760px){#sidebar{width:100%;height:auto;position:relative}#main{margin-left:0}.two-col{grid-template-columns:1fr}.view{padding:20px 16px 48px}}
+</style>
+</head>
+<body>
+
+<!-- ══════ SIDEBAR ══════ -->
+<div id="sidebar">
+  <div class="logo">
+    <h1>ISS Travel App</h1>
+    <p>Java Modernization Lab — IBM Bob</p>
+  </div>
+  <nav id="nav">
+    <span class="nsec">Overview</span>
+    <a onclick="go('intro')" id="n-intro" class="active"><span class="snum">&#9654;</span>Introduction</a>
+    <a onclick="go('setup')" id="n-setup"><span class="snum">&#9881;</span>Setup &amp; Prerequisites</a>
+    <span class="nsec">Lab Prompts</span>
+    <a onclick="go('p1')" id="n-p1"><span class="snum">1</span>Analyse the legacy app</a>
+    <a onclick="go('p2')" id="n-p2"><span class="snum">2</span>Create a migration plan</a>
+    <a onclick="go('p3')" id="n-p3"><span class="snum">3</span>Implement modernization</a>
+    <a onclick="go('p4')" id="n-p4"><span class="snum">4</span>Run &amp; verify</a>
+    <a onclick="go('p5')" id="n-p5"><span class="snum">5</span>Confirm no WebSphere dependencies</a>
+    <a onclick="go('p6')" id="n-p6"><span class="snum">6</span>Generate lab &amp; report</a>
+    <span class="nsec">Reference</span>
+    <a onclick="go('concepts')" id="n-concepts"><span class="snum">?</span>Key Concepts</a>
+    <a onclick="go('complete')" id="n-complete"><span class="snum">&#10003;</span>Completion</a>
+  </nav>
+  <div class="prog-wrap">
+    <p>Progress: <span id="ptxt">0 / 6 prompts</span></p>
+    <div class="pbar"><div class="pfill" id="pfill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- ══════ MAIN ══════ -->
+<div id="main">
+
+<!-- ── INTRO ── -->
+<div class="view active" id="view-intro">
+
+  <div style="display:inline-block;background:#e0f2fe;color:#0369a1;border-radius:18px;padding:4px 12px;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px">
+    Workshop Overview
+  </div>
+
+  <div class="hero">
+    <h2>App Modernization: Same App, Modern Foundation</h2>
+    <p>Use IBM Bob to modernize the ISS Travel App from Java 8 / WebSphere 9 to Java 17 / Open Liberty while preserving the application's existing behavior.</p>
+    <div class="tag-row">
+      <span class="tag">Java 8</span><span class="tag">WebSphere 9</span>
+      <span class="tag arr">→</span>
+      <span class="tag">IBM Bob</span>
+      <span class="tag arr">→</span>
+      <span class="tag">Java 17</span><span class="tag">Open Liberty</span>
+    </div>
+  </div>
+
+  <div class="card" style="border-left:4px solid #0ea5e9;background:#f0f9ff">
+    <h3 style="font-size:16px;text-transform:none;letter-spacing:0;color:#0f172a">What This Workshop Is About</h3>
+
+    <p style="font-size:13.5px;margin-bottom:12px">
+      In this workshop, you will use <strong>IBM Bob</strong> to modernize a small legacy Java web application called the <strong>ISS Travel App</strong>.
+    </p>
+
+    <p style="font-size:13.5px;margin-bottom:12px">
+      The ISS Travel App is a traditional Java web application for creating and viewing travel requests. It includes a browser-based user interface, Java servlets, REST APIs, business logic, and an in-memory repository. The application was originally built for <strong>Java 8, Java EE 7, and IBM WebSphere Application Server 9</strong>.
+    </p>
+
+    <p style="font-size:13.5px;margin-bottom:12px">
+      The application itself is <strong>not being redesigned</strong>. The goal is to preserve the same application, REST APIs, business logic, data behavior, and browser experience while moving it onto a more modern and portable foundation.
+    </p>
+
+    <p style="font-size:13.5px;margin-bottom:12px">
+      During the lab, IBM Bob will help you <strong>analyze</strong> the existing application, create a modernization <strong>plan</strong>, migrate from <strong>Java 8 to Java 17</strong>, remove WebSphere-specific runtime dependencies, simplify <strong>EAR + WAR</strong> packaging to <strong>WAR deployment</strong>, configure <strong>Open Liberty</strong>, build and run the application, verify its existing behavior, and generate a final before-and-after modernization report.
+    </p>
+
+    <p style="font-size:13.5px;margin-bottom:14px">
+      <strong>This is not a rewrite.</strong> You are not converting the application to microservices, changing the frontend framework, introducing Kubernetes/OpenShift, replacing the repository with a database, redesigning the REST APIs, or changing the application's business logic.
+    </p>
+
+    <div class="success-box" style="margin-bottom:14px">
+      <strong>Workshop goal:</strong> Take an existing application, remove its legacy platform dependencies, update the Java runtime and deployment environment, and prove that the same application behavior still works on Java 17 and Open Liberty.
+    </div>
+
+    <p style="font-size:13.5px;margin-bottom:0">
+      At the end of the workshop, you should have the <strong>same ISS Travel application</strong> running on Java 17 and Open Liberty, together with successful build results, functional verification, WebSphere-dependency checks, and a final modernization report showing what changed and what stayed the same.
+    </p>
+  </div>
+
+  <div class="output-box" style="line-height:1.65">BEFORE
+ISS Travel App
+  ├─ Java 8
+  ├─ Java EE 7
+  ├─ WebSphere 9
+  ├─ EAR + WAR packaging
+  ├─ WebSphere-specific APIs
+  ├─ IBM deployment descriptors
+  └─ WAS runtime dependency
+
+                 ↓ IBM Bob
+
+        Analyze → Plan → Modernize
+          → Run → Verify → Report
+
+AFTER
+ISS Travel App
+  ├─ Java 17
+  ├─ Jakarta EE 8 / Servlet 4.0
+  ├─ Open Liberty
+  ├─ WAR deployment
+  ├─ Standard Servlet APIs
+  └─ No WebSphere runtime dependency
+
+SAME
+  ├─ Business logic
+  ├─ REST APIs
+  ├─ Browser UI
+  ├─ Travel-request behavior
+  └─ Application purpose</div>
+
+  <div class="success-box" style="font-size:14px">
+    <strong>Workshop principle:</strong> Same application. Same behavior. Modern foundation.
+  </div>
+
+  <div class="card">
+    <h3>Modernization Scope</h3>
+    <table style="margin-bottom:0">
+      <tr><th>We ARE modernizing</th><th>We are NOT changing</th></tr>
+      <tr><td>Java 8 → Java 17</td><td>Business logic</td></tr>
+      <tr><td>WebSphere runtime → Open Liberty</td><td>REST API contracts and behavior</td></tr>
+      <tr><td>WebSphere-specific runtime APIs/dependencies → portable alternatives</td><td>Browser UI design and user experience (except updating obsolete technology labels)</td></tr>
+      <tr><td>EAR + WAR packaging → WAR deployment</td><td>Application architecture into microservices</td></tr>
+      <tr><td>Maven build and deployment configuration</td><td>Repository/database design</td></tr>
+      <tr><td>IBM/WebSphere deployment configuration where no longer required</td><td>Kubernetes, OpenShift, CI/CD, or new business features</td></tr>
+    </table>
+  </div>
+
+  <div class="bob-bar">
+    <div class="bob-icon">B</div>
+    <p><strong>How this lab works:</strong> You will guide IBM Bob through a controlled modernization lifecycle: <strong>Analyze → Plan → Modernize → Run &amp; Verify → Validate Cleanup → Document</strong>. Each step gives you a ready-made Bob prompt, expected evidence, and a <strong>What just happened?</strong> explanation so you understand both the action and the technical outcome.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Starting state — legacy</h3>
+      <div class="si"><span class="dot red"></span>Java 8 (source/target = 1.8)</div>
+      <div class="si"><span class="dot red"></span>Java EE 7 / Servlet 3.1</div>
+      <div class="si"><span class="dot red"></span>IBM WebSphere Application Server 9</div>
+      <div class="si"><span class="dot red"></span>EAR + WAR packaging</div>
+      <div class="si"><span class="dot red"></span>was_public.jar (system scope)</div>
+      <div class="si"><span class="dot red"></span>com.ibm.websphere.* &amp; com.ibm.ws.* references</div>
+      <div class="si"><span class="dot red"></span>IBM-specific deployment descriptors</div>
+      <div class="si"><span class="dot red"></span><strong>Build: FAILS (WAS_HOME not set)</strong></div>
+    </div>
+    <div class="card">
+      <h3>Target state — modernized</h3>
+      <div class="si"><span class="dot green"></span>Java 17 (release = 17)</div>
+      <div class="si"><span class="dot green"></span>Jakarta EE 8 / Servlet 4.0</div>
+      <div class="si"><span class="dot green"></span>Open Liberty 24.0.0.9</div>
+      <div class="si"><span class="dot green"></span>WAR-only deployment</div>
+      <div class="si"><span class="dot green"></span>jakarta.servlet-api:4.0.4 (provided)</div>
+      <div class="si"><span class="dot green"></span>Standard javax.servlet.* APIs</div>
+      <div class="si"><span class="dot green"></span>server.xml + Liberty Maven plugin</div>
+      <div class="si"><span class="dot green"></span><strong>Build: SUCCESS</strong></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>What Bob Must Preserve</h3>
+    <ul style="padding-left:18px;margin-top:4px">
+      <li style="font-size:13px;margin-bottom:4px"><code>index.html</code> and <code>main.js</code> — preserve the browser portal design and behavior; update only the displayed technology/runtime labels so they accurately describe the modernized application</li>
+      <li style="font-size:13px;margin-bottom:4px"><code>TravelRequest.java</code>, <code>TravelRepository.java</code>, <code>JsonUtil.java</code> — application business/data behavior</li>
+      <li style="font-size:13px;margin-bottom:4px"><code>TravelRepositoryTest.java</code> — the existing unit test</li>
+      <li style="font-size:13px;margin-bottom:4px">REST behavior: <code>GET /api/trips</code>, <code>POST /api/trips</code>, <code>GET /api/trips?id=N</code>, <code>GET /api/health</code></li>
+      <li style="font-size:13px">Existing JSON response shapes, sample travel data, and the Add Travel Request flow with immediate table refresh</li>
+    </ul>
+  </div>
+
+  <div style="text-align:right;margin-top:6px">
+    <button class="btn bp" onclick="go('setup')">Next: Setup &#8594;</button>
+  </div>
+</div>
+
+<!-- ── SETUP ── -->
+<div class="view" id="view-setup">
+  <div class="hero">
+    <h2>Setup &amp; Prerequisites</h2>
+    <p>Confirm your environment before opening IBM Bob.</p>
+  </div>
+
+<div class="card">
+  <h3>Environment PreReq Checklist</h3>
+
+  <p>
+    IBM Bob is assumed to already be installed. Run the provided prerequisite
+    script to prepare the supporting RHEL environment.
+  </p>
+
+  <div class="success-box">
+    <b>Prerequisite script:</b> <code>iss-lab-prereq.sh</code><br>
+    <a href="https://github.com/DerekCook11/CDE-Bob-Labs-SoA/blob/main/JAM/SpaceLab/iss-lab-prereq.sh" download>
+      Download prerequisite script
+    </a>
+  </div>
+
+  <p><strong>Prepare the lab workspace:</strong></p>
+
+  <div class="output-box">chmod +x iss-lab-prereq.sh
+./iss-lab-prereq.sh
+
+unzip ISS_Travel_Legacy_Java8_WebSphere9_v2.zip
+cd iss-travel-legacy</div>
+
+  <div class="tip">
+    <strong>Next:</strong> Open the <code>iss-travel-legacy</code> folder in
+    IBM Bob IDE. Use <strong>Agent mode</strong> for all prompts in this lab.
+  </div>
+</div>
+
+  <div class="card">
+    <h3>How to use the prompts in this lab</h3>
+    <ol style="padding-left:18px;margin-top:4px">
+      <li style="font-size:13px;margin-bottom:8px">Each step shows a <strong>Bob Prompt</strong> box with a <strong>Copy</strong> button.</li>
+      <li style="font-size:13px;margin-bottom:8px">Click <strong>Copy</strong>, then paste the prompt into the IBM Bob chat input and send it.</li>
+      <li style="font-size:13px;margin-bottom:8px">Wait for Bob to finish — he will read the project, make all changes, run the build, and report results.</li>
+      <li style="font-size:13px;margin-bottom:8px">Read the <strong>What to expect</strong> section on each step to verify Bob's response.</li>
+      <li style="font-size:13px;margin-bottom:8px">After Bob finishes, read <strong>What just happened?</strong> to understand the technical outcome and why the step matters.</li>
+      <li style="font-size:13px">Click <strong>Mark Complete &amp; Continue</strong> only after the expected evidence has been verified.</li>
+    </ol>
+  </div>
+
+  <div class="tip"><strong>Tip:</strong> Use IBM Bob in <strong>Agent mode</strong> for this lab. Agent mode allows Bob to read files, make edits, run commands, and iterate — which is exactly what these prompts require.</div>
+
+  <div style="display:flex;justify-content:space-between;margin-top:6px">
+    <button class="btn bx" onclick="go('intro')">&larr; Back</button>
+    <button class="btn bp" onclick="go('p1')">Start Lab — Prompt to Bob &#8594;</button>
+  </div>
+</div>
+
+<!-- ── PROMPT 1 ── -->
+<div class="view" id="view-p1">
+  <div class="step-card">
+    <div class="step-top">
+      <div class="step-num-row"><div class="sn">1</div><h2>Analyse the legacy application</h2></div>
+      <div class="why">Ask Bob to read the entire project and produce a modernization assessment. Do not change any files yet.</div>
+    </div>
+    <div class="step-body">
+      <div class="bob-bar">
+        <div class="bob-icon">B</div>
+        <p>Paste this prompt into IBM Bob. Bob will scan every source file, POM, and descriptor, then write <code>modernization-assessment.md</code> to your workspace.</p>
+      </div>
+
+      <div class="prompt-label"><span>BOB PROMPT</span> Step 1 of 6</div>
+      <div class="prompt-wrap">
+        <div class="prompt-box" id="pb1">Analyse this legacy Java application and do not modify any files yet.
+
+The application is an ISS Travel App originally designed for:
+- Java 8
+- Java EE 7
+- IBM WebSphere Application Server 9
+- EAR + WAR packaging
+
+The current development environment has:
+- Java 17
+- Maven 3.9
+- No IBM WebSphere installation
+
+The current build fails with:
+  'dependencies.dependency.systemPath' for
+  com.ibm.websphere:was-public-api:jar
+  must specify an absolute path but is
+  ${env.WAS_HOME}/plugins/com.ibm.ws.runtime.jar
+
+Please analyse the complete project and produce a modernization assessment.
+
+Identify:
+1. Java 8 dependencies and compiler settings
+2. WebSphere-specific Java APIs
+3. IBM-specific deployment descriptors
+4. EAR/WAR packaging dependencies
+5. Maven dependencies tied to WebSphere
+6. Java EE / javax dependencies
+7. What prevents this application from running on a vanilla Java environment
+8. What should be changed to migrate to Java 17 and Open Liberty
+9. Which existing application behavior and REST APIs must be preserved
+
+Do not change any files yet.
+
+Create a file called modernization-assessment.md.
+
+Include:
+- current architecture
+- identified technical debt
+- WebSphere dependencies
+- Java version dependencies
+- migration risks
+- recommended target architecture
+- proposed modernization steps</div>
+        <button class="copy-btn" onclick="copyPrompt('pb1',this)">Copy</button>
+      </div>
+
+      <div class="sec">What to expect from Bob</div>
+      <p>Bob will open and read every file in the project and then create <code>modernization-assessment.md</code> in your workspace root. The assessment will identify:</p>
+      <ul>
+        <li>The root cause of the build failure (<code>WAS_HOME</code> / system scope)</li>
+        <li>All three WebSphere Java imports: <code>WSSecurityHelper</code>, <code>ServerName</code>, <code>WsnInitialContextFactory</code></li>
+        <li>The IBM deployment descriptors (<code>ibm-web-bnd.xml</code>, <code>ibm-web-ext.xml</code>, <code>ibm-metadata.xml</code>)</li>
+        <li>The EAR module and why it is unnecessary on Liberty</li>
+        <li>Recommended steps to migrate to Java 17 + Open Liberty</li>
+      </ul>
+      <div class="success-box"><strong>Success:</strong> <code>modernization-assessment.md</code> appears in your workspace. Read through it — Bob has mapped every piece of technical debt before touching a single file.</div>
+
+
+      <div class="what-happened">
+        <strong class="title">What just happened?</strong>
+        <p>Bob inspected the legacy application before changing it. It identified the Java 8 settings, WebSphere-specific APIs and descriptors, EAR/WAR structure, Maven runtime dependency, and the application behavior that must be preserved.</p>
+        <p><strong>Why this matters:</strong> Modernization starts with understanding the existing system. The assessment gives you a documented baseline and prevents the migration from becoming an uncontrolled rewrite.</p>
+      </div>
+
+    </div>
+    <div class="step-foot">
+      <button class="btn bx" onclick="go('setup')">&larr; Back</button>
+      <button class="btn bp" onclick="done(1);go('p2')">Mark Complete &amp; Continue &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROMPT 2 ── -->
+<div class="view" id="view-p2">
+  <div class="step-card">
+    <div class="step-top">
+      <div class="step-num-row"><div class="sn">2</div><h2>Create a detailed migration plan</h2></div>
+      <div class="why">Ask Bob to turn the assessment into a concrete, file-by-file plan — still no changes yet.</div>
+    </div>
+    <div class="step-body">
+      <div class="bob-bar">
+        <div class="bob-icon">B</div>
+        <p>Bob will use <code>modernization-assessment.md</code> as input and produce a detailed <code>modernization-plan.md</code> showing exactly what will be changed, removed, and created.</p>
+      </div>
+
+      <div class="prompt-label"><span>BOB PROMPT</span> Step 2 of 6</div>
+      <div class="prompt-wrap">
+        <div class="prompt-box" id="pb2">Now create a detailed modernization plan based on modernization-assessment.md.
+
+Target architecture:
+- Java 17
+- Open Liberty
+- Standard Servlet APIs
+- WAR-only deployment
+- No WebSphere runtime dependency
+- No com.ibm.websphere.* imports
+- No com.ibm.ws.* imports
+- No was_public.jar or com.ibm.ws.runtime.jar dependency
+- Remove the legacy EAR module
+- Remove IBM-specific deployment descriptors:
+  - ibm-web-bnd.xml
+  - ibm-web-ext.xml
+  - ibm-metadata.xml
+- Add an Open Liberty server.xml
+- Add the Liberty Maven plugin
+- Preserve the existing browser UI design and behavior
+- Do not redesign the frontend or change the Add Travel Request workflow
+- Update only the technology/runtime labels displayed in index.html:
+  - "Legacy Java EE 7" -> "Jakarta EE 8"
+  - "IBM WebSphere 9" -> "Open Liberty"
+  - "Java 8" -> "Java 17"
+- Do not otherwise modify index.html
+- Do not modify main.js
+- Preserve GET /api/trips
+- Preserve POST /api/trips
+- Preserve GET /api/trips?id=&lt;id&gt;
+- Preserve GET /api/health
+- Preserve the existing JSON response structure and sample travel data
+- Preserve the Add Travel Request form and its immediate table refresh
+
+Do not perform the migration yet.
+
+Create modernization-plan.md.
+
+Show every file that will be changed, removed, or created, with a before/after diff for each modified file.</div>
+        <button class="copy-btn" onclick="copyPrompt('pb2',this)">Copy</button>
+      </div>
+
+      <div class="sec">What to expect from Bob</div>
+      <p>Bob creates <code>modernization-plan.md</code> listing the required file operations with full before/after diffs for each modification. You should see:</p>
+      <table>
+        <tr><th>File</th><th>Action</th></tr>
+        <tr><td><code>pom.xml</code> (root)</td><td><span class="bm badge">MODIFY</span> — remove EAR module, Java 17 compiler</td></tr>
+        <tr><td><code>legacy-web/pom.xml</code></td><td><span class="bm badge">MODIFY</span> — remove WAS dep, add Liberty plugin</td></tr>
+        <tr><td><code>TravelServlet.java</code></td><td><span class="bm badge">MODIFY</span> — remove IBM imports</td></tr>
+        <tr><td><code>HealthServlet.java</code></td><td><span class="bm badge">MODIFY</span> — remove IBM imports</td></tr>
+        <tr><td><code>WEB-INF/web.xml</code></td><td><span class="bm badge">MODIFY</span> — Servlet 3.1 → 4.0</td></tr>
+        <tr><td>3 IBM Java source files</td><td><span class="bd badge">DELETE</span></td></tr>
+        <tr><td>3 IBM deployment descriptors</td><td><span class="bd badge">DELETE</span></td></tr>
+        <tr><td><code>legacy-ear/</code></td><td><span class="bd badge">DELETE</span></td></tr>
+        <tr><td><code>server.xml</code></td><td><span class="ba badge">CREATE</span></td></tr>
+      </table>
+      <div class="success-box"><strong>Success:</strong> <code>modernization-plan.md</code> appears in your workspace with detailed diffs. Review it before proceeding — this is your blueprint.</div>
+
+      <ul class="chk-list">
+        <li><span class="chkbox" onclick="tick(this)"></span><span>Bob created <code>modernization-plan.md</code></span></li>
+      </ul>
+
+      <div class="what-happened">
+        <strong class="title">What just happened?</strong>
+        <p>Bob converted the assessment into a concrete migration blueprint. You now know which files will be modified, removed, or created before any modernization changes are applied.</p>
+        <p><strong>Why this matters:</strong> The plan separates analysis from implementation and gives you a reviewable change set before Bob touches the application.</p>
+      </div>
+
+    </div>
+    <div class="step-foot">
+      <button class="btn bx" onclick="go('p1')">&larr; Back</button>
+      <button class="btn bp" onclick="done(2);go('p3')">Mark Complete &amp; Continue &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROMPT 3 ── -->
+<div class="view" id="view-p3">
+  <div class="step-card">
+    <div class="step-top">
+      <div class="step-num-row"><div class="sn">3</div><h2>Implement the full modernization</h2></div>
+      <div class="why">Ask Bob to execute all changes from the plan, build the project, fix any errors, and confirm the result compiles cleanly on Java 17.</div>
+    </div>
+    <div class="step-body">
+      <div class="bob-bar">
+        <div class="bob-icon">B</div>
+        <p>This is the core migration prompt. Bob will make every file change, run <code>mvn clean package</code>, and iterate until the build succeeds. This may take a minute or two.</p>
+      </div>
+
+      <div class="prompt-label"><span>BOB PROMPT</span> Step 3 of 6</div>
+      <div class="prompt-wrap">
+        <div class="prompt-box" id="pb3">Implement the modernization plan now.
+
+Use modernization-assessment.md and modernization-plan.md as the source of truth.
+
+Modernize the ISS Travel App to the following target state:
+- Java 17
+- Open Liberty
+- WAR-only deployment
+- Standard Servlet APIs
+- No WebSphere runtime dependency
+- No com.ibm.websphere.* imports
+- No com.ibm.ws.* imports
+- No was_public.jar or com.ibm.ws.runtime.jar dependency
+- Remove the legacy EAR module
+- Remove IBM-specific deployment descriptors:
+  - ibm-web-bnd.xml
+  - ibm-web-ext.xml
+  - ibm-metadata.xml
+- Add an Open Liberty server.xml
+- Add the Liberty Maven plugin
+- Preserve the existing browser UI design and behavior
+- Do not redesign the frontend or change the Add Travel Request workflow
+- Update only the technology/runtime labels displayed in index.html:
+  - "Legacy Java EE 7" -> "Jakarta EE 8"
+  - "IBM WebSphere 9" -> "Open Liberty"
+  - "Java 8" -> "Java 17"
+- Do not otherwise modify index.html
+- Do not modify main.js
+- Preserve GET /api/trips
+- Preserve POST /api/trips
+- Preserve GET /api/trips?id=&lt;id&gt;
+- Preserve GET /api/health
+- Preserve the existing JSON response structure and sample travel data
+- Preserve the Add Travel Request form and immediate table refresh
+
+After making all changes, run:
+  mvn clean package -f legacy-web/pom.xml
+
+Fix any compilation or dependency errors.
+
+Confirm the application compiles with Java 17 by checking the bytecode major version.
+
+Do not change the business behavior or browser UI design/functionality beyond the technology/runtime label updates explicitly listed above.</div>
+        <button class="copy-btn" onclick="copyPrompt('pb3',this)">Copy</button>
+      </div>
+
+      <div class="sec">What to expect from Bob</div>
+      <p>Bob will make all changes in the correct order, then run the build. Watch for:</p>
+      <div class="output-box"><span class="hi">[INFO] Compiling 5 source files with javac [debug release 17]
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Building war: .../target/iss-travel.war
+[INFO] BUILD SUCCESS</span></div>
+      <div class="tip"><strong>If Bob encounters a dependency resolution error</strong> (e.g. a specific Liberty runtime version not on Maven Central), it will iterate and try an alternative — just let it continue.</div>
+      <div class="success-box"><strong>Success:</strong> <code>mvn clean package</code> reports BUILD SUCCESS and bytecode shows <code>major version: 61</code> (= Java 17).</div>
+
+
+      <div class="what-happened">
+        <strong class="title">What just happened?</strong>
+        <p>This was the actual modernization step. Bob removed the WebSphere-specific runtime coupling, updated the build for Java 17, simplified deployment from EAR + WAR to WAR-only, added Open Liberty configuration, and rebuilt the application.</p>
+        <p><strong>What did not change:</strong> The application's business behavior, REST contract, sample data, browser UI design, and frontend workflow were preserved. Only the technology/runtime labels in the portal were updated to reflect the new environment.</p>
+        <p><strong>Why this matters:</strong> The application can now compile as Java 17 and target Open Liberty without requiring the traditional WebSphere runtime used by the legacy build.</p>
+      </div>
+
+    </div>
+    <div class="step-foot">
+      <button class="btn bx" onclick="go('p2')">&larr; Back</button>
+      <button class="btn bp" onclick="done(3);go('p4')">Mark Complete &amp; Continue &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROMPT 4 ── -->
+<div class="view" id="view-p4">
+  <div class="step-card">
+    <div class="step-top">
+      <div class="step-num-row"><div class="sn">4</div><h2>Start the application and verify all endpoints</h2></div>
+      <div class="why">Ask Bob to start Open Liberty, run all API verification tests, and confirm the browser portal works.</div>
+    </div>
+    <div class="step-body">
+      <div class="bob-bar">
+        <div class="bob-icon">B</div>
+        <p>Bob will start Liberty using <code>mvn liberty:start</code> and <code>mvn liberty:deploy</code>, then verify all four REST endpoints. On first run Liberty downloads its runtime (~180 MB) — this may take a few minutes.</p>
+      </div>
+
+      <div class="prompt-label"><span>BOB PROMPT</span> Step 4 of 6</div>
+      <div class="prompt-wrap">
+        <div class="prompt-box" id="pb4">Run the application on Open Liberty and verify all endpoints.
+
+1. Start Open Liberty using the Liberty Maven plugin
+2. Deploy the application
+3. Verify /api/health returns HTTP 200
+4. Verify GET /api/trips returns all expected travel records
+5. Verify GET /api/trips?id=1001 returns the Elena Torres record
+6. Verify GET /api/trips?id=9999 returns HTTP 404
+7. Verify POST /api/trips creates a new travel request and returns HTTP 201
+8. Verify that the newly created request appears when GET /api/trips is called again
+9. Verify the browser application is available at http://localhost:9080/iss-travel/
+10. Confirm the portal displays the modernized technology labels: "Jakarta EE 8", "Open Liberty", and "Java 17"
+11. Confirm the Add Travel Request form still works and the table refreshes with the newly created request without a full page reload
+
+Report the actual HTTP status codes and response bodies for each API verification.
+
+Do not modify application code during verification unless a runtime or deployment problem is discovered.
+If a change is required, document:
+- the failure
+- the root cause
+- the file changed
+- the change made
+- the verification performed afterward
+
+Use: mvn liberty:start -f legacy-web/pom.xml
+     mvn liberty:deploy -f legacy-web/pom.xml</div>
+        <button class="copy-btn" onclick="copyPrompt('pb4',this)">Copy</button>
+      </div>
+
+      <div class="sec">Expected verification results</div>
+      <table>
+        <tr><th>Endpoint</th><th>Expected</th></tr>
+        <tr><td><code>GET /api/health</code></td><td><span class="pass">HTTP 200</span> — <code>{"status":"UP","runtime":"Open Liberty",...}</code></td></tr>
+        <tr><td><code>GET /api/trips</code></td><td><span class="pass">HTTP 200</span> — JSON array, 4 seed records</td></tr>
+        <tr><td><code>GET /api/trips?id=1001</code></td><td><span class="pass">HTTP 200</span> — Elena Torres record</td></tr>
+        <tr><td><code>GET /api/trips?id=9999</code></td><td><span class="pass">HTTP 404</span> — <code>{"error":"Travel request not found"}</code></td></tr>
+        <tr><td><code>POST /api/trips</code></td><td><span class="pass">HTTP 201</span> — created record with <code>id:1005</code></td></tr>
+        <tr><td><code>GET /api/trips</code> after POST</td><td><span class="pass">5 records</span> returned</td></tr>
+      </table>
+      <div class="tip">Open the browser portal at <code>http://localhost:9080/iss-travel/</code> and test the Add Travel Request form manually — fill in the fields and click the button. The new row should appear in the table immediately without a page reload.</div>
+
+      <ul class="chk-list">
+        <li><span class="chkbox" onclick="tick(this)"></span><span><code>GET /api/health</code> returns HTTP 200 with <code>"runtime":"Open Liberty"</code></span></li>
+        <li><span class="chkbox" onclick="tick(this)"></span><span><code>GET /api/trips</code> returns 4 seed records</span></li>
+        <li><span class="chkbox" onclick="tick(this)"></span><span><code>GET /api/trips?id=1001</code> returns Elena Torres</span></li>
+        <li><span class="chkbox" onclick="tick(this)"></span><span><code>GET /api/trips?id=9999</code> returns HTTP 404</span></li>
+        <li><span class="chkbox" onclick="tick(this)"></span><span><code>POST /api/trips</code> returns HTTP 201 with <code>id:1005</code></span></li>
+        <li><span class="chkbox" onclick="tick(this)"></span><span><code>GET /api/trips</code> after POST returns 5 records including the newly created request</span></li>
+        <li><span class="chkbox" onclick="tick(this)"></span><span>Browser portal displays <strong>Jakarta EE 8</strong>, <strong>Open Liberty</strong>, and <strong>Java 17</strong></span></li>
+        <li><span class="chkbox" onclick="tick(this)"></span><span>Browser portal loads and the Add Travel Request flow still works</span></li>
+      </ul>
+
+      <div class="what-happened">
+        <strong class="title">What just happened?</strong>
+        <p>Bob moved beyond compilation and proved that the modernized application actually runs. The API checks validate health, retrieval, lookup, error handling, creation, and post-create retrieval, while the browser check confirms the user-facing flow still works.</p>
+        <p><strong>Why this matters:</strong> A successful build proves the code compiles; runtime and functional verification provide evidence that modernization preserved application behavior.</p>
+      </div>
+
+    </div>
+    <div class="step-foot">
+      <button class="btn bx" onclick="go('p3')">&larr; Back</button>
+      <button class="btn bp" onclick="done(4);go('p5')">Mark Complete &amp; Continue &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROMPT 5 ── -->
+<div class="view" id="view-p5">
+  <div class="step-card">
+    <div class="step-top">
+      <div class="step-num-row"><div class="sn">5</div><h2>Confirm no WebSphere-specific dependencies remain</h2></div>
+      <div class="why">Ask Bob to scan the entire source tree and confirm the migration is clean — with no WebSphere-specific runtime dependencies or references remaining.</div>
+    </div>
+    <div class="step-body">
+      <div class="bob-bar">
+        <div class="bob-icon">B</div>
+        <p>Bob will scan the source tree for WebSphere-specific patterns and report the evidence. Application-owned package names such as <code>com.ibm.demo.*</code> are not migration defects and should not be renamed.</p>
+      </div>
+
+      <div class="prompt-label"><span>BOB PROMPT</span> Step 5 of 6</div>
+      <div class="prompt-wrap">
+        <div class="prompt-box" id="pb5">Search the entire project and confirm there are no remaining WebSphere-specific runtime dependencies or references.
+
+Do not treat application-owned package names such as com.ibm.demo.* as WebSphere dependencies, and do not rename them.
+
+Check for:
+1. com.ibm.websphere.* imports or references
+2. com.ibm.ws.* imports or references
+3. WAS_HOME references
+4. com.ibm.ws.runtime.jar references
+5. was_public or was-public references
+
+Also confirm:
+6. The IBM-specific deployment descriptors have been removed (ibm-web-bnd.xml, ibm-web-ext.xml, ibm-metadata.xml)
+7. The legacy-ear/ directory has been removed
+8. The application is compiling with Java 17 (show the bytecode major version)
+9. The unit test still passes
+
+Report each check explicitly as CLEAN or FOUND with evidence.</div>
+        <button class="copy-btn" onclick="copyPrompt('pb5',this)">Copy</button>
+      </div>
+
+      <div class="sec">Expected results — WebSphere-specific checks must be CLEAN</div>
+      <table>
+        <tr><th>Check</th><th>Expected</th></tr>
+        <tr><td><code>com.ibm.websphere.*</code> in source</td><td><span class="pass">CLEAN — none found</span></td></tr>
+        <tr><td><code>com.ibm.ws.*</code> in source</td><td><span class="pass">CLEAN — none found</span></td></tr>
+        <tr><td><code>WAS_HOME</code> references</td><td><span class="pass">CLEAN — none found</span></td></tr>
+        <tr><td><code>com.ibm.ws.runtime.jar</code></td><td><span class="pass">CLEAN — none found</span></td></tr>
+        <tr><td><code>was_public</code> / <code>was-public</code></td><td><span class="pass">CLEAN — none found</span></td></tr>
+        <tr><td>IBM deployment descriptors</td><td><span class="pass">Only <code>web.xml</code> in WEB-INF/</span></td></tr>
+        <tr><td><code>legacy-ear/</code> directory</td><td><span class="pass">Removed</span></td></tr>
+        <tr><td>Bytecode major version</td><td><span class="pass">61 (Java 17)</span></td></tr>
+        <tr><td>Unit test</td><td><span class="pass">Tests run: 1, Failures: 0</span></td></tr>
+      </table>
+
+
+      <div class="what-happened">
+        <strong class="title">What just happened?</strong>
+        <p>Bob performed a post-migration cleanliness check for WebSphere-specific runtime dependencies and configuration. It also reconfirmed Java 17 bytecode and the unit test.</p>
+        <p><strong>Important:</strong> Application-owned package names such as <code>com.ibm.demo.*</code> are not WebSphere runtime dependencies and are intentionally left alone.</p>
+        <p><strong>Why this matters:</strong> The application is not considered cleanly modernized if obsolete WebSphere coupling remains hidden in source code, Maven configuration, descriptors, or packaging.</p>
+      </div>
+
+    </div>
+    <div class="step-foot">
+      <button class="btn bx" onclick="go('p4')">&larr; Back</button>
+      <button class="btn bp" onclick="done(5);go('p6')">Mark Complete &amp; Continue &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROMPT 6 ── -->
+<div class="view" id="view-p6">
+  <div class="step-card">
+    <div class="step-top">
+      <div class="step-num-row"><div class="sn">6</div><h2>Generate the final modernization report</h2></div>
+      <div class="why">Ask Bob to produce a complete HTML report documenting everything that was changed.</div>
+    </div>
+    <div class="step-body">
+      <div class="bob-bar">
+        <div class="bob-icon">B</div>
+        <p>Bob will generate <code>iss-travel-modernization-final-report.html</code> — a shareable report capturing the full before/after state, all file changes, API verification results, and remaining risks.</p>
+      </div>
+
+      <div class="prompt-label"><span>BOB PROMPT</span> Step 6 of 6</div>
+      <div class="prompt-wrap">
+        <div class="prompt-box" id="pb6">Create a final modernization report named:
+  iss-travel-modernization-final-report.html
+
+The report should include:
+- Executive summary
+- Before architecture
+- After architecture
+- Files changed, removed, and created
+- Java 8 to Java 17 changes
+- WebSphere to Open Liberty changes
+- Dependencies removed
+- Dependencies added
+- Before and after Maven build results
+- API verification results (with actual HTTP status codes and response bodies)
+- Remaining risks or follow-up items</div>
+        <button class="copy-btn" onclick="copyPrompt('pb6',this)">Copy</button>
+      </div>
+
+      <div class="sec">What to expect</div>
+      <p>Bob creates <code>iss-travel-modernization-final-report.html</code> in your workspace root. Open it in a browser — it is a self-contained, shareable document with no external dependencies.</p>
+      <div class="success-box"><strong>Success:</strong> The HTML report opens in a browser and shows BUILD SUCCESS, all 6 API verification checks passing, successful browser UI verification, and no remaining WebSphere-specific runtime dependencies.</div>
+
+      <ul class="chk-list">
+        <li><span class="chkbox" onclick="tick(this)"></span><span>Bob created <code>iss-travel-modernization-final-report.html</code></span></li>
+        <li><span class="chkbox" onclick="tick(this)"></span><span>Report shows BUILD SUCCESS and all API tests passing</span></li>
+      </ul>
+
+      <div class="what-happened">
+        <strong class="title">What just happened?</strong>
+        <p>Bob turned the modernization work and verification evidence into a final, shareable HTML report. The report records the legacy state, target state, changes made, build outcome, API verification, and remaining follow-up items.</p>
+        <p><strong>Why this matters:</strong> The modernization now has an audit trail that can be reviewed, shared, and used as evidence of what changed and how the result was validated.</p>
+      </div>
+
+    </div>
+    <div class="step-foot">
+      <button class="btn bx" onclick="go('p5')">&larr; Back</button>
+      <button class="btn bg" onclick="done(6);go('complete')">&#10003; Complete Lab</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── KEY CONCEPTS ── -->
+<div class="view" id="view-concepts">
+  <div class="hero">
+    <h2>Key Concepts</h2>
+    <p>The "why" behind what Bob does in each prompt.</p>
+  </div>
+
+  <div class="acc"><div class="acc-hd" onclick="accToggle(this)">Why system-scope Maven dependencies cause build failures<span class="acc-arr">&#9660;</span></div>
+  <div class="acc-bd">A <code>&lt;scope&gt;system&lt;/scope&gt;</code> dependency tells Maven to read a JAR from a hard-coded filesystem path. This bypasses Maven's repository system entirely and ties the build to a specific machine. Maven 3.9 requires the path to be an absolute literal — environment variable expansions like <code>${env.WAS_HOME}</code> are rejected before compilation even starts. The correct approach is <code>&lt;scope&gt;provided&lt;/scope&gt;</code> with a standard Maven coordinate that resolves from a repository.</div></div>
+
+  <div class="acc"><div class="acc-hd" onclick="accToggle(this)">javax.servlet vs jakarta.servlet — why no imports need renaming<span class="acc-arr">&#9660;</span></div>
+  <div class="acc-bd">When the Jakarta EE project took stewardship of Java EE, it eventually renamed all packages from <code>javax.*</code> to <code>jakarta.*</code>. That rename happened at <strong>Jakarta EE 9</strong> (Servlet 5.0). The target of this migration is Jakarta EE 8 (Servlet 4.0), which <em>still uses <code>javax.servlet.*</code></em>. The artifact <code>jakarta.servlet:jakarta.servlet-api:4.0.4</code> has the new groupId on Maven Central but the classes inside remain in <code>javax.servlet</code>. Zero import changes are needed in the existing Java files.</div></div>
+
+  <div class="acc"><div class="acc-hd" onclick="accToggle(this)">Why the EAR module can be removed<span class="acc-arr">&#9660;</span></div>
+  <div class="acc-bd">This legacy project uses an Enterprise Application Archive (EAR) to package the web module. WebSphere supports both EAR and WAR deployment, so EAR packaging is not a universal WebSphere requirement. In this application, however, the EAR is unnecessary for the target architecture because Open Liberty can deploy the WAR directly. The required context root <code>/iss-travel</code> can be configured in <code>server.xml</code>. Removing this project's EAR simplifies the Maven reactor while preserving the application's behavior.</div></div>
+
+  <div class="acc"><div class="acc-hd" onclick="accToggle(this)">What maven.compiler.release does that source/target doesn't<span class="acc-arr">&#9660;</span></div>
+  <div class="acc-bd">The old <code>source</code>/<code>target</code> pair controls syntax compatibility and bytecode version — but it does not prevent you from accidentally calling APIs that only exist in newer JDKs. The <code>--release N</code> flag (exposed as <code>maven.compiler.release</code>) also locks the bootstrap classpath, so the compiler refuses any API not available in Java N. It is a single, stronger guarantee that replaces two properties.</div></div>
+
+  <div class="acc"><div class="acc-hd" onclick="accToggle(this)">Why IBM deployment descriptors can be deleted without replacement<span class="acc-arr">&#9660;</span></div>
+  <div class="acc-bd">Files such as <code>ibm-web-bnd.xml</code>, <code>ibm-web-ext.xml</code>, and <code>ibm-metadata.xml</code> contain WebSphere-specific deployment metadata. For this migration, Bob must first determine what configuration they provide and confirm that the target Open Liberty deployment does not depend on it. The descriptors can then be removed when their settings are unnecessary for this application or are represented by the target Liberty configuration. This avoids carrying WebSphere-specific deployment metadata into the modernized application.</div></div>
+
+  <div class="acc"><div class="acc-hd" onclick="accToggle(this)">Why IBM Bob prompts are better than manual edits for migration tasks<span class="acc-arr">&#9660;</span></div>
+  <div class="acc-bd">Manual migration involves reading every file, mentally tracking dependencies between changes, and running the build after each edit. Bob reads the entire codebase before making any changes, understands inter-file dependencies (e.g. knowing that deleting <code>WebSphereSecurityUtil.java</code> requires also changing <code>TravelServlet.java</code>), applies all changes atomically, and immediately validates by running the build. If the build fails Bob iterates automatically. The result is a complete, verified migration in a single prompt rather than dozens of careful manual steps.</div></div>
+
+  <div style="margin-top:20px;text-align:right">
+    <button class="btn bp" onclick="go('complete')">View Completion &#8594;</button>
+  </div>
+</div>
+
+<!-- ── COMPLETION ── -->
+<div class="view" id="view-complete">
+  <div class="done-banner">
+    <h2>&#10003; Lab Complete!</h2>
+    <p>You have used IBM Bob to fully migrate the ISS Travel App from WebSphere 9 / Java 8 to Open Liberty 24 / Java 17.</p>
+  </div>
+
+  <div class="sec">The 6 prompts you used</div>
+  <table>
+    <tr><th>#</th><th>Prompt</th><th>Bob's output</th></tr>
+    <tr><td>1</td><td>Analyse the legacy app</td><td><code>modernization-assessment.md</code></td></tr>
+    <tr><td>2</td><td>Create migration plan</td><td><code>modernization-plan.md</code></td></tr>
+    <tr><td>3</td><td>Implement modernization</td><td>Required migration changes + BUILD SUCCESS</td></tr>
+    <tr><td>4</td><td>Run &amp; verify application</td><td>6 API checks passed + browser UI verified</td></tr>
+    <tr><td>5</td><td>Confirm no WebSphere dependencies</td><td>All 9 WebSphere-cleanliness checks passed</td></tr>
+    <tr><td>6</td><td>Generate final report</td><td><code>iss-travel-modernization-final-report.html</code></td></tr>
+  </table>
+
+  <div class="sec">What changed in the codebase</div>
+  <table>
+    <tr><th>File</th><th>Action</th></tr>
+    <tr><td><code>pom.xml</code></td><td><span class="bm badge">MODIFIED</span> — removed EAR module; Java 17 compiler</td></tr>
+    <tr><td><code>legacy-web/pom.xml</code></td><td><span class="bm badge">MODIFIED</span> — removed WAS deps; added Liberty plugin</td></tr>
+    <tr><td><code>TravelServlet.java</code></td><td><span class="bm badge">MODIFIED</span> — removed IBM imports</td></tr>
+    <tr><td><code>HealthServlet.java</code></td><td><span class="bm badge">MODIFIED</span> — removed IBM imports</td></tr>
+    <tr><td><code>WEB-INF/web.xml</code></td><td><span class="bm badge">MODIFIED</span> — Servlet 3.1 → 4.0</td></tr>
+    <tr><td><code>index.html</code></td><td><span class="bm badge">MODIFIED</span> — technology/runtime labels updated only; UI design and behavior preserved</td></tr>
+    <tr><td><code>legacy/LegacyNamingFactory.java</code></td><td><span class="bd badge">DELETED</span></td></tr>
+    <tr><td><code>legacy/WebSphereSecurityUtil.java</code></td><td><span class="bd badge">DELETED</span></td></tr>
+    <tr><td><code>legacy/WebSphereServerInfo.java</code></td><td><span class="bd badge">DELETED</span></td></tr>
+    <tr><td><code>WEB-INF/ibm-web-bnd.xml</code></td><td><span class="bd badge">DELETED</span></td></tr>
+    <tr><td><code>WEB-INF/ibm-web-ext.xml</code></td><td><span class="bd badge">DELETED</span></td></tr>
+    <tr><td><code>WEB-INF/ibm-metadata.xml</code></td><td><span class="bd badge">DELETED</span></td></tr>
+    <tr><td><code>legacy-ear/</code> (directory)</td><td><span class="bd badge">DELETED</span></td></tr>
+    <tr><td><code>src/main/liberty/config/server.xml</code></td><td><span class="ba badge">CREATED</span></td></tr>
+  </table>
+
+  <div class="sec">Preserved application components</div>
+  <p style="font-size:13px;margin-bottom:10px">The following application components were preserved. The portal HTML receives only the minimal technology-label updates required to accurately represent the modernized runtime.</p>
+  <table>
+    <tr><th>File</th><th>Reason unchanged</th></tr>
+    <tr><td><code>index.html</code></td><td>UI structure and behavior preserved; only technology/runtime labels updated to Jakarta EE 8, Open Liberty, and Java 17</td></tr>
+    <tr><td><code>main.js</code></td><td>Standard <code>fetch()</code> API with relative URLs — works on any server</td></tr>
+    <tr><td><code>TravelRequest.java</code></td><td>Plain POJO — no imports, no framework dependency</td></tr>
+    <tr><td><code>TravelRepository.java</code></td><td>Uses only <code>java.util.*</code> and <code>java.util.concurrent.*</code></td></tr>
+    <tr><td><code>JsonUtil.java</code></td><td>Uses only <code>java.util.regex.*</code></td></tr>
+    <tr><td><code>TravelRepositoryTest.java</code></td><td>JUnit 4 — works unchanged on Java 17</td></tr>
+  </table>
+
+  <div class="sec">Possible next steps</div>
+  <div class="card">
+    <ul style="padding-left:18px;margin-top:4px">
+      <li style="font-size:13px;margin-bottom:6px">Add a JPA datasource and replace <code>TravelRepository</code> with a persistent store (H2 or PostgreSQL)</li>
+      <li style="font-size:13px;margin-bottom:6px">Add MicroProfile Health (<code>mpHealth-4.0</code> Liberty feature) for a standards-based health endpoint</li>
+      <li style="font-size:13px;margin-bottom:6px">Add Jakarta Security or MicroProfile JWT for authentication</li>
+      <li style="font-size:13px;margin-bottom:6px">Replace hand-rolled <code>JsonUtil</code> with Jackson or JSON-B</li>
+      <li style="font-size:13px;margin-bottom:6px">Upgrade to Jakarta EE 10 / Servlet 6.0 (requires renaming <code>javax.*</code> → <code>jakarta.*</code>)</li>
+      <li style="font-size:13px">Containerize with a <code>Dockerfile</code> using the <code>icr.io/appcafe/open-liberty</code> base image</li>
+    </ul>
+  </div>
+</div>
+
+</div><!-- /#main -->
+
+<script>
+var TOTAL = 6;
+var completed = {};
+var views = ['intro','setup','p1','p2','p3','p4','p5','p6','concepts','complete'];
+
+function go(id) {
+  views.forEach(function(v) {
+    var el = document.getElementById('view-' + v);
+    var nav = document.getElementById('n-' + v);
+    if (el) el.classList.remove('active');
+    if (nav) { nav.classList.remove('active'); }
+  });
+  var t = document.getElementById('view-' + id);
+  var n = document.getElementById('n-' + id);
+  if (t) t.classList.add('active');
+  if (n) n.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function done(n) {
+  completed[n] = true;
+  var nav = document.getElementById('n-p' + n);
+  if (nav) {
+    nav.classList.add('done');
+    var dot = nav.querySelector('.snum');
+    if (dot) dot.textContent = '✓';
+  }
+  updateProg();
+}
+
+function updateProg() {
+  var c = Object.keys(completed).length;
+  document.getElementById('pfill').style.width = Math.round((c / TOTAL) * 100) + '%';
+  document.getElementById('ptxt').textContent = c + ' / ' + TOTAL + ' prompts';
+}
+
+function tick(el) {
+  el.classList.toggle('on');
+}
+
+function copyPrompt(id, btn) {
+  var text = document.getElementById(id).innerText;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  }
+}
+
+function accToggle(hd) {
+  var bd = hd.nextElementSibling;
+  var arr = hd.querySelector('.acc-arr');
+  var open = bd.classList.toggle('open');
+  arr.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+</script>
+</body>
+</html>
