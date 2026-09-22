@@ -14,7 +14,14 @@ Download these files to a local directory
 - `ISS_Travel_Legacy_Java8_WebSphere9_v2.zip` — Legacy Java 8 / WebSphere ISS Travel application
 
 
+### Setup
+
+Download the files above to a local directory.
+
 In the terminal:
+
+```bash
 chmod +x iss-lab-prereq.sh
-Run the Prerequisite script ./iss-lab-prereq.sh
-unzip ISS_Travel_Legacy_Java8_WebSphere9_v2 and cd to iss-travel-legacy
+./iss-lab-prereq.sh
+unzip ISS_Travel_Legacy_Java8_WebSphere9_v2.zip
+cd iss-travel-legacy
