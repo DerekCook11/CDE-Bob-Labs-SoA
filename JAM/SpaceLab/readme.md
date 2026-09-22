@@ -10,4 +10,4 @@ Download **[ISS Travel App — Java Modernization Lab](iss-travel-lab.html)** an
 
 - `iss-travel-lab.html` — Interactive lab guide
 - `iss-lab-prereq.sh` — Lab prerequisite script
-- `iss-travel-legacy.zip` — Legacy Java 8 / WebSphere ISS Travel application
+- `ISS_Travel_Legacy_Java8_WebSphere9_v2.zip` — Legacy Java 8 / WebSphere ISS Travel application
