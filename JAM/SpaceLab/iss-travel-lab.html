@@ -232,14 +232,34 @@ tr:nth-child(even) td{background:#fafbfc}
     <p>Confirm your environment before opening IBM Bob.</p>
   </div>
 
-  <div class="card">
-    <h3>Environment PreReq Checklist</h3>
-	  <p>IBM Bob is assumed to already be installed. Run the provided prerequisite script to prepare the supporting RHEL environment.</p>
-		<div class="success-box">
-		<b>Prerequisite script:</b> <code>iss-lab-prereq.sh</code><br>
-		<a href="https://github.com/DerekCook11/CDE-Bob-Labs-SoA/blob/main/JAM/SpaceLab/iss-lab-prereq.sh" download>Download prerequisite script</a>
-		</div>
+<div class="card">
+  <h3>Environment PreReq Checklist</h3>
+
+  <p>
+    IBM Bob is assumed to already be installed. Run the provided prerequisite
+    script to prepare the supporting RHEL environment.
+  </p>
+
+  <div class="success-box">
+    <b>Prerequisite script:</b> <code>iss-lab-prereq.sh</code><br>
+    <a href="https://github.com/DerekCook11/CDE-Bob-Labs-SoA/blob/main/JAM/SpaceLab/iss-lab-prereq.sh" download>
+      Download prerequisite script
+    </a>
   </div>
+
+  <p><strong>Prepare the lab workspace:</strong></p>
+
+  <div class="output-box">chmod +x iss-lab-prereq.sh
+./iss-lab-prereq.sh
+
+unzip ISS_Travel_Legacy_Java8_WebSphere9_v2.zip
+cd iss-travel-legacy</div>
+
+  <div class="tip">
+    <strong>Next:</strong> Open the <code>iss-travel-legacy</code> folder in
+    IBM Bob IDE. Use <strong>Agent mode</strong> for all prompts in this lab.
+  </div>
+</div>
 
   <div class="card">
     <h3>How to use the prompts in this lab</h3>
