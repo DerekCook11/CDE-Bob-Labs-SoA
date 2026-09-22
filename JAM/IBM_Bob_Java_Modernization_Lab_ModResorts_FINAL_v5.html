@@ -116,8 +116,8 @@ ModResorts Monolith
 
 <ol>
   <li><b>Create a folder</b> in the file system named <code>JavaModLab</code>.</li>
-  <li><b>Download the Legacy App (see below)</b> <code>modresorts-twas-j8.zip</code> and save it inside the <code>JavaModLab</code> folder.</li>
-  <li><b>Download the prerequisite script (see below)</b> <code>modresorts-lab-prereq.sh</code> and save it inside the same <code>JavaModLab</code> folder.</li>
+  <li><b>Download the Legacy App</b> <code>modresorts-twas-j8.zip</code> and save it inside the <code>JavaModLab</code> folder.</li>
+  <li><b>Download the prerequisite script</b> <code>modresorts-lab-prereq.sh</code> and save it inside the same <code>JavaModLab</code> folder.</li>
   <li><b>Extract the Legacy App</b> from inside the <code>JavaModLab</code> folder using the unzip command shown below. This creates the <code>modresorts-twas-j8</code> application folder.</li>
   <li><b>Run the prerequisite script</b> from the <code>JavaModLab</code> folder using the commands shown below.</li>
   <li><b>Open IBM Bob IDE.</b></li>
@@ -726,7 +726,16 @@ else
   echo "FAIL: Final report missing"
 fi</code></pre>
 
-<p><b>Manual browser check:</b> open <code>http://localhost:9080/resorts/</code> and verify:</p>
+<p><b>Manual browser check:</b> open and verify
+<a href="http://localhost:9080/resorts/" Portal>Portal - http://localhost:9080/resorts/</a></p>
+
+If the portal doesn't load, issue this command to bob Prompt
+<p class="label">Prompt to Bob</p>
+<pre><button class="copy" onclick="copyBlock(this)">Copy</button><code>start the liberty so we can see the portal
+</code></pre>
+open and verify
+<a href="http://localhost:9080/resorts/" Portal>Portal - http://localhost:9080/resorts/</a>
+
 <ul>
 <li>the page loads correctly</li>
 <li>the <b>Where to?</b> dropdown opens and displays the six cities</li>
