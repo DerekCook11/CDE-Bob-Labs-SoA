@@ -7,7 +7,14 @@ This folder contains the **IBM Bob Java Modernization Lab** materials for modern
 Download **[ISS Travel App — Java Modernization Lab](iss-travel-lab.html)** and open it in a browser for the full interactive lab experience.
 
 ## Files
+Download these files to a local directory
 
 - `iss-travel-lab.html` — Interactive lab guide
 - `iss-lab-prereq.sh` — Lab prerequisite script
 - `ISS_Travel_Legacy_Java8_WebSphere9_v2.zip` — Legacy Java 8 / WebSphere ISS Travel application
+
+
+In the terminal:
+chmod +x iss-lab-prereq.sh
+Run the Prerequisite script ./iss-lab-prereq.sh
+unzip ISS_Travel_Legacy_Java8_WebSphere9_v2 and cd to iss-travel-legacy
