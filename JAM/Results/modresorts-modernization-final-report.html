@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModResorts Modernization Final Report</title>
+    <style>
+        :root {
+            --primary: #0f62fe;
+            --primary-dark: #0043ce;
+            --text-main: #161616;
+            --text-muted: #525252;
+            --bg-light: #f4f7fb;
+            --card-bg: #ffffff;
+            --border: #e0e0e0;
+            --success: #198038;
+            --success-bg: #defbe6;
+            --warning: #f1c21b;
+            --warning-bg: #fdf6dd;
+            --danger: #da1e28;
+            --badge-bg: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            margin: 0;
+            font-size: 16px;
+            color: #93c5fd;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: -20px auto 40px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 22px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .kicker {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+            background: #edf5ff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .stat-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #334155;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success { background: var(--success-bg); color: var(--success); }
+        .badge-warning { background: var(--warning-bg); color: #8a6d00; }
+        .badge-neutral { background: var(--badge-bg); color: var(--text-main); }
+
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 13px;
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #0f172a;
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        .callout {
+            border-left: 4px solid var(--primary);
+            background: #edf5ff;
+            padding: 14px 18px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .callout-success {
+            border-left-color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .architecture-box {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 18px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 13px;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-muted);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>ModResorts Application Modernization Report</h1>
+    <p>Transformation from Traditional WebSphere (Java 8) to Open Liberty (Java 17)</p>
+</div>
+
+<div class="container">
+
+    <!-- Executive Summary & Metrics -->
+    <div class="card">
+        <div class="kicker">Executive Summary</div>
+        <h2>Modernization Overview & Metrics</h2>
+        <p>The legacy <b>ModResorts</b> application has been modernized from Java 8 running on traditional WebSphere Application Server (tWAS) to Java 17 running on <strong>Open Liberty</strong>. The application remains an identical monolithic WAR artifact, retaining its complete business functionality, HTML/JSP user interface, and <code>javax.*</code> Servlet namespace without unnecessary architectural sprawl.</p>
+        
+        <div class="stat-grid">
+            <div class="stat-box">
+                <div class="stat-value">Java 17</div>
+                <div class="stat-label">Runtime Target</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">30 / 30</div>
+                <div class="stat-label">Passing Unit Tests</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">82.8%</div>
+                <div class="stat-label">WeatherServlet Coverage (>=80%)</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">HTTP 200</div>
+                <div class="stat-label">Live Open Liberty Status</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Before vs After Architecture Diagram -->
+    <div class="card">
+        <div class="kicker">System Architecture</div>
+        <h2>Before vs. After Architecture</h2>
+        <div class="grid-2">
+            <div>
+                <h3>Legacy Architecture (Before)</h3>
+                <div class="architecture-box">┌────────────────────────────────────────┐
+│           ModResorts Monolith          │
+├────────────────────────────────────────┤
+│ • Java 8 (source/target 1.8)           │
+│ • Traditional WebSphere APIs:          │
+│   - WSSecurityHelper / WSSubject       │
+│   - ResponseUtils HTML filter          │
+│   - ServerName runtime utility         │
+│   - WsnInitialContextFactory           │
+│ • com.ibm.websphere.appserver:was_public│
+│ • Unmanaged shared Gson runtime libs   │
+│ • Missing pikaday.js asset in repo     │
+│ • Restricted calendar date range       │
+│ • Target: tWAS v8.5 / v9.0             │
+└────────────────────────────────────────┘</div>
+            </div>
+            <div>
+                <h3>Modernized Architecture (After)</h3>
+                <div class="architecture-box">┌────────────────────────────────────────┐
+│           ModResorts Monolith          │
+├────────────────────────────────────────┤
+│ • Java 17 (LTS)                        │
+│ • Standard Portable Java/Servlet APIs: │
+│   - HttpServletRequest.logout()        │
+│   - Native HTML entity escaping        │
+│   - Standard Java ManagementFactory    │
+│   - Standard InitialContext            │
+│ • No was_public dependency             │
+│ • Explicitly bundled Gson in WAR lib   │
+│ • Bundled Pikaday v1.8.2 static asset  │
+│ • Dynamic multi-year date picker range │
+│ • Target: Open Liberty 26.0 (Port 9080)│
+└────────────────────────────────────────┘</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Before vs After Change Matrix -->
+    <div class="card">
+        <div class="kicker">Comparison Matrix</div>
+        <h2>Before vs. After Change Matrix</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Dimension</th>
+                    <th>Before (Legacy)</th>
+                    <th>After (Modernized)</th>
+                    <th>Modernization Impact</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Java Version</strong></td>
+                    <td>Java SE 8 (1.8)</td>
+                    <td>Java SE 17 (LTS)</td>
+                    <td><span class="badge badge-success">Upgraded</span> Full modern language support and LTS security.</td>
+                </tr>
+                <tr>
+                    <td><strong>Application Server Runtime</strong></td>
+                    <td>Traditional WebSphere Application Server (tWAS)</td>
+                    <td>Open Liberty (Kernel 26.0.0.9)</td>
+                    <td><span class="badge badge-success">Modernized</span> Cloud-ready, fast startup, lightweight memory footprint.</td>
+                </tr>
+                <tr>
+                    <td><strong>Proprietary WebSphere APIs</strong></td>
+                    <td><code>WSSecurityHelper</code>, <code>ResponseUtils</code>, <code>ServerName</code>, <code>WsnInitialContextFactory</code></td>
+                    <td>Standard Java 17, Servlet 3.1, and standard JNDI</td>
+                    <td><span class="badge badge-success">Portable</span> Zero runtime lock-in to legacy WebSphere binaries.</td>
+                </tr>
+                <tr>
+                    <td><strong>Maven Dependencies</strong></td>
+                    <td><code>com.ibm.websphere.appserver:was_public</code> (system/local)</td>
+                    <td><code>javax:javaee-api:7.0</code> (provided), <code>gson:2.10.1</code> (compile)</td>
+                    <td><span class="badge badge-success">Resolved</span> Portable build without external proprietary JAR scripts.</td>
+                </tr>
+                <tr>
+                    <td><strong>JNDI Context</strong></td>
+                    <td><code>com.ibm.websphere.naming.WsnInitialContextFactory</code></td>
+                    <td>Standard <code>new InitialContext()</code></td>
+                    <td><span class="badge badge-success">Standardized</span> Standard Java EE naming provider.</td>
+                </tr>
+                <tr>
+                    <td><strong>WAR Packaging</strong></td>
+                    <td>WAR missing runtime JSON parser</td>
+                    <td>Self-contained WAR with <code>WEB-INF/lib/gson-2.10.1.jar</code></td>
+                    <td><span class="badge badge-success">Hermetic</span> Completely self-contained deployment artifact.</td>
+                </tr>
+                <tr>
+                    <td><strong>Frontend UI & Assets</strong></td>
+                    <td>Missing <code>pikaday.js</code>, static hardcoded date ranges</td>
+                    <td>Packaged <code>lib/pikaday.js</code>, dynamic calendar range bounds</td>
+                    <td><span class="badge badge-success">Defects Fixed</span> UI and availability check fully functional.</td>
+                </tr>
+                <tr>
+                    <td><strong>Application Architecture</strong></td>
+                    <td>Monolith WAR</td>
+                    <td>Monolith WAR</td>
+                    <td><span class="badge badge-neutral">Preserved</span> Identical business behavior and structure.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Code Transformation Examples -->
+    <div class="card">
+        <div class="kicker">Code Refactoring</div>
+        <h2>Key Code Refactoring Examples</h2>
+
+        <h3>1. Security & Logout: <code>WSSecurityHelper</code> → Standard Servlet API</h3>
+        <p><b>Before (tWAS):</b></p>
+        <pre><code>// Legacy WebSphere proprietary security revocation
+com.ibm.websphere.security.WSSecurityHelper.revokeSSOCookies(request, response);
+com.ibm.websphere.security.auth.WSSubject.getCallerPrincipal();</code></pre>
+        <p><b>After (Open Liberty / Standard Servlet 3.1):</b></p>
+        <pre><code>// Standard Portable Java EE Servlet API
+HttpSession session = request.getSession(false);
+if (session != null) {
+    session.invalidate();
+}
+request.logout();</code></pre>
+
+        <h3>2. Response Escaping: <code>ResponseUtils</code> → Portable Sanitizer</h3>
+        <p><b>Before (tWAS):</b></p>
+        <pre><code>// WebSphere proprietary response utility
+String newStr = com.ibm.websphere.servlet.response.ResponseUtils.filter(originalStr);</code></pre>
+        <p><b>After (Standard Java):</b></p>
+        <pre><code>// Self-contained portable HTML encoder
+private static String encodeHtml(String input) {
+    if (input == null) return "";
+    StringBuilder sb = new StringBuilder();
+    for (char c : input.toCharArray()) {
+        switch (c) {
+            case '&': sb.append("&amp;"); break;
+            case '<': sb.append("&lt;"); break;
+            case '>': sb.append("&gt;"); break;
+            case '"': sb.append("&quot;"); break;
+            case '\'': sb.append("&#x27;"); break;
+            default: sb.append(c);
+        }
+    }
+    return sb.toString();
+}</code></pre>
+
+        <h3>3. Runtime Server Identification: <code>ServerName</code> → Standard JMX</h3>
+        <p><b>Before (tWAS):</b></p>
+        <pre><code>String serverEnv = com.ibm.websphere.runtime.ServerName.getDisplayName();</code></pre>
+        <p><b>After (Standard Java):</b></p>
+        <pre><code>String serverEnv = ManagementFactory.getRuntimeMXBean().getName();</code></pre>
+
+        <h3>4. JNDI Context: <code>WsnInitialContextFactory</code> → Standard JNDI</h3>
+        <p><b>Before (tWAS):</b></p>
+        <pre><code>Hashtable&lt;String, String&gt; env = new Hashtable&lt;&gt;();
+env.put(Context.INITIAL_CONTEXT_FACTORY, "com.ibm.websphere.naming.WsnInitialContextFactory");
+InitialContext ctx = new InitialContext(env);</code></pre>
+        <p><b>After (Standard InitialContext):</b></p>
+        <pre><code>InitialContext ctx = new InitialContext();</code></pre>
+    </div>
+
+    <!-- Runtime Issues Encountered & Resolved -->
+    <div class="card">
+        <div class="kicker">Validation & Remediation</div>
+        <h2>Runtime Issues Discovered & Resolved</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Issue Area</th>
+                    <th>Symptom / Discovery</th>
+                    <th>Root Cause</th>
+                    <th>Resolution</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Missing Frontend Asset</strong></td>
+                    <td>Browser console threw <code>Pikaday is not defined</code>; 404 on <code>lib/pikaday.js</code>.</td>
+                    <td>Pikaday JavaScript library was referenced in <code>WebContent/index.html</code> but absent from the legacy repository.</td>
+                    <td>Included standalone Pikaday v1.8.2 JavaScript into <code>WebContent/lib/pikaday.js</code>.</td>
+                </tr>
+                <tr>
+                    <td><strong>Missing Runtime Library (Gson)</strong></td>
+                    <td><code>NoClassDefFoundError: com.google.code.gson.Gson</code> on weather/availability REST calls.</td>
+                    <td>Gson was historically provided by tWAS shared libraries and was not packaged in the WAR.</td>
+                    <td>Added <code>com.google.code.gson:gson:2.10.1</code> with standard compile scope so it is bundled in <code>WEB-INF/lib</code>.</td>
+                </tr>
+                <tr>
+                    <td><strong>Surefire / JaCoCo argLine</strong></td>
+                    <td>Surefire JVM startup failure passing literal <code>@{argLine}</code> or conflicts in dev mode.</td>
+                    <td>Missing dedicated late-binding property definition for JaCoCo execution argument line.</td>
+                    <td>Defined <code>&lt;jacocoArgLine&gt;&lt;/jacocoArgLine&gt;</code> and configured <code>&lt;propertyName&gt;jacocoArgLine&lt;/propertyName&gt;</code> in JaCoCo plugin.</td>
+                </tr>
+                <tr>
+                    <td><strong>Stale Liberty Port Binding</strong></td>
+                    <td><code>CWWKO0221E: The socket bind did not succeed for host * and port 9080. Address already in use</code>.</td>
+                    <td>A prior background JVM process had retained port 9080.</td>
+                    <td>Identified and terminated the stale process ID, installed Open Liberty features (<code>servlet-3.1</code>, <code>jsp-2.3</code>, etc.), and deployed the clean WAR.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Live HTTP Verification Results -->
+    <div class="card">
+        <div class="kicker">Verification Results</div>
+        <h2>Live Verification on Open Liberty</h2>
+        <div class="callout callout-success">
+            <strong>Open Liberty Verification:</strong> All endpoints verified live via cURL and browser on port 9080 with 0 errors.
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Endpoint / Asset</th>
+                    <th>HTTP Method</th>
+                    <th>Expected Result</th>
+                    <th>Actual Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>http://localhost:9080/resorts/</code></td>
+                    <td>GET / HEAD</td>
+                    <td>HTTP 200 OK (HTML landing page)</td>
+                    <td><span class="badge badge-success">200 OK</span> (12,839 bytes)</td>
+                </tr>
+                <tr>
+                    <td><code>http://localhost:9080/resorts/lib/pikaday.js</code></td>
+                    <td>GET / HEAD</td>
+                    <td>HTTP 200 OK (JavaScript library)</td>
+                    <td><span class="badge badge-success">200 OK</span> (37,351 bytes)</td>
+                </tr>
+                <tr>
+                    <td><code>http://localhost:9080/resorts/styles.css</code></td>
+                    <td>GET / HEAD</td>
+                    <td>HTTP 200 OK (Application Stylesheet)</td>
+                    <td><span class="badge badge-success">200 OK</span> (5,108 bytes)</td>
+                </tr>
+                <tr>
+                    <td><code>http://localhost:9080/resorts/weather?selectedCity=Paris</code></td>
+                    <td>GET</td>
+                    <td>HTTP 200 OK (JSON weather data)</td>
+                    <td><span class="badge badge-success">200 OK</span> (JSON observation returned)</td>
+                </tr>
+                <tr>
+                    <td><code>http://localhost:9080/resorts/availability?date=12/25/2026</code></td>
+                    <td>GET</td>
+                    <td>HTTP 200 OK (JSON availability data)</td>
+                    <td><span class="badge badge-success">200 OK</span> (<code>{"availability": "true"}</code>)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- What Did Not Change -->
+    <div class="card">
+        <div class="kicker">Scope & Guardrails</div>
+        <h2>What Did Not Change</h2>
+        <div class="callout">
+            To prevent scope creep and maintain architectural stability, the following architectural aspects were intentionally kept identical:
+        </div>
+        <ul>
+            <li><strong>Monolithic Architecture</strong>: The application remains a monolith packaged as a single WAR.</li>
+            <li><strong>Business Logic & Functionality</strong>: All reservation, weather lookups, availability rules, and filters operate with identical business logic.</li>
+            <li><strong>Frontend Technology</strong>: The existing JSP and HTML/CSS/Vanilla JS UI was preserved; no React or single-page framework was introduced.</li>
+            <li><strong>Packaging Standard</strong>: The build produces standard Java Web Application Archive (<code>modresorts-2.0.0.war</code>).</li>
+            <li><strong>Database Schema & State</strong>: No database migration was performed.</li>
+            <li><strong>No Microservices</strong>: No service decomposition or microservice boundaries were introduced.</li>
+            <li><strong>No Kubernetes / OpenShift</strong>: Deployed directly on lightweight local Open Liberty runtime.</li>
+            <li><strong>No CI/CD Pipeline</strong>: Built and validated using standard local Maven CLI tools.</li>
+            <li><strong>Java EE Namespace Preserved</strong>: Application APIs retain <code>javax.*</code> / <code>javax.servlet.*</code> (no Jakarta EE 9/10 namespace migration).</li>
+        </ul>
+    </div>
+
+    <!-- Remaining Warnings & Risks -->
+    <div class="card">
+        <div class="kicker">Risk Assessment</div>
+        <h2>Remaining Warnings and Future Considerations</h2>
+        <ul>
+            <li><strong>Java Security Manager Deprecation</strong>: <code>com.acme.modres.security.Service</code> invokes <code>System.getSecurityManager()</code>, which produces a standard Java 17 compile warning (marked for removal in future Java releases). This has zero impact on Java 17 Open Liberty operation.</li>
+            <li><strong>Offline Weather API</strong>: The application correctly falls back to embedded city JSON data when external Weather Underground API keys are absent.</li>
+        </ul>
+    </div>
+
+</div>
+
+<footer>
+    Modernization completed with IBM Bob &bull; ModResorts Monolith (Java 17 / Open Liberty)
+</footer>
+
+</body>
+</html>
