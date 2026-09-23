@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ISS Travel App — Lab Session Summary</title>
+<style>
+/* ── Reset & Base ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;background:#f0f2f5;color:#1f2328}
+a{color:#3b82d4;text-decoration:none}
+code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-size:12px;background:#eef0f3;padding:1px 5px;border-radius:3px;color:#c7254e}
+pre{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-all}
+
+/* ── Layout ── */
+.shell{max-width:1100px;margin:0 auto;padding:0 16px 60px}
+.page-header{background:linear-gradient(135deg,#0f2747 0%,#1a3a6b 100%);color:#fff;padding:28px 32px 24px;border-radius:0 0 12px 12px;margin-bottom:24px}
+.page-header h1{font-size:20px;font-weight:700;letter-spacing:-0.3px}
+.page-header .sub{font-size:13px;opacity:.75;margin-top:4px}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;letter-spacing:.3px}
+.bg-green{background:#d1fae5;color:#065f46}
+.bg-blue{background:#dbeafe;color:#1e40af}
+.bg-purple{background:#ede9fe;color:#5b21b6}
+.bg-amber{background:#fef3c7;color:#92400e}
+.bg-red{background:#fee2e2;color:#991b1b}
+.bg-gray{background:#f3f4f6;color:#374151}
+
+/* ── Metrics strip ── */
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.metric-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px 14px;text-align:center}
+.metric-card .num{font-size:26px;font-weight:700;color:#0f2747;line-height:1.1}
+.metric-card .lbl{font-size:11px;color:#57606a;margin-top:3px}
+
+/* ── Search bar ── */
+.search-wrap{margin-bottom:20px}
+.search-wrap input{width:100%;padding:10px 14px;border:1px solid #d1d5db;border-radius:8px;font:inherit;font-size:13px;background:#fff;outline:none}
+.search-wrap input:focus{border-color:#3b82d4;box-shadow:0 0 0 3px rgba(59,130,212,.15)}
+.search-highlight{background:#fef08a;border-radius:2px}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:4px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:5px;margin-bottom:20px;flex-wrap:wrap}
+.tab-btn{padding:7px 16px;border:none;background:transparent;border-radius:7px;font:inherit;font-size:13px;font-weight:500;color:#57606a;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s}
+.tab-btn:hover{background:#f3f4f6;color:#1f2328}
+.tab-btn.active{background:#0f2747;color:#fff}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ── Cards & panels ── */
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:16px;overflow:hidden}
+.card-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;background:#f8fafc;border-bottom:1px solid #e5e7eb}
+.card-header:hover{background:#f0f4f8}
+.card-header h3{font-size:13px;font-weight:600;color:#0f2747}
+.card-header .step-badge{background:#0f2747;color:#fff;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;margin-right:10px;flex-shrink:0}
+.card-header .chevron{font-size:12px;color:#9ca3af;transition:transform .2s}
+.card-body{padding:16px;display:none}
+.card-body.open{display:block}
+
+/* ── Before/After columns ── */
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.ba-box{border-radius:8px;padding:16px}
+.ba-before{background:#fff5f5;border:1px solid #fecaca}
+.ba-after{background:#f0fdf4;border:1px solid #bbf7d0}
+.ba-box h3{font-size:12px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:12px}
+.ba-before h3{color:#991b1b}
+.ba-after h3{color:#065f46}
+.ba-box pre{background:transparent;border:none;padding:0;font-size:11.5px;color:#1f2328}
+
+/* ── Comparison table ── */
+.comp-table{width:100%;border-collapse:collapse;font-size:13px}
+.comp-table th{background:#f7f8fa;padding:9px 12px;text-align:left;border:1px solid #e5e7eb;font-weight:600;color:#374151}
+.comp-table td{padding:8px 12px;border:1px solid #e5e7eb;vertical-align:top}
+.comp-table tr:nth-child(even) td{background:#fafbfc}
+.old{color:#991b1b;font-weight:500}
+.new{color:#065f46;font-weight:500}
+
+/* ── Section labels ── */
+h2.section-title{font-size:14px;font-weight:700;color:#0f2747;margin:0 0 12px;padding-bottom:7px;border-bottom:2px solid #e5e7eb}
+
+/* ── API table ── */
+.api-table{width:100%;border-collapse:collapse;font-size:13px}
+.api-table th{background:#0f2747;color:#fff;padding:9px 12px;text-align:left;font-weight:600}
+.api-table td{padding:8px 12px;border-bottom:1px solid #e5e7eb;vertical-align:top}
+.api-table tr:last-child td{border-bottom:none}
+.api-table tr:nth-child(even) td{background:#fafbfc}
+.method{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.3px}
+.m-get{background:#dbeafe;color:#1e40af}
+.m-post{background:#d1fae5;color:#065f46}
+.status-ok{color:#065f46;font-weight:700}
+.status-err{color:#991b1b;font-weight:700}
+.payload{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:5px;padding:7px 10px;font-size:11px;margin-top:4px;font-family:"SFMono-Regular",Consolas,monospace;white-space:pre-wrap;word-break:break-all}
+
+/* ── Command blocks ── */
+.cmd-block{background:#1e293b;border-radius:8px;overflow:hidden;margin-bottom:14px}
+.cmd-block-header{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:#0f172a;border-bottom:1px solid #334155}
+.cmd-block-header .cmd-label{font-size:11px;color:#94a3b8;font-weight:500}
+.copy-btn{background:#334155;border:none;color:#94a3b8;font-size:11px;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;transition:background .15s}
+.copy-btn:hover{background:#475569;color:#fff}
+.copy-btn.copied{background:#065f46;color:#d1fae5}
+.cmd-block pre{padding:12px 14px;color:#e2e8f0;background:transparent;font-size:12px}
+
+/* ── Artifact cards ── */
+.artifact-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.artifact-card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px}
+.artifact-card .af-icon{font-size:20px;margin-bottom:6px}
+.artifact-card .af-name{font-size:13px;font-weight:600;color:#0f2747}
+.artifact-card .af-type{font-size:11px;color:#57606a;margin-top:2px}
+.artifact-card .af-desc{font-size:12.5px;color:#374151;margin-top:6px;line-height:1.5}
+
+/* ── File diff items ── */
+.file-list{list-style:none}
+.file-list li{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:13px}
+.file-list li:last-child{border-bottom:none}
+.file-action{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.fa-mod{background:#ede9fe;color:#5b21b6}
+.fa-del{background:#fee2e2;color:#991b1b}
+.fa-new{background:#d1fae5;color:#065f46}
+.fa-unch{background:#f3f4f6;color:#6b7280}
+
+/* ── Misc utility ── */
+.pill{display:inline-block;font-size:11px;background:#f0f4f8;color:#374151;padding:2px 8px;border-radius:10px;margin:2px}
+.ok-tick{color:#065f46;font-weight:700}
+.fail-x{color:#991b1b;font-weight:700}
+.muted{color:#57606a;font-size:12px}
+.gap-top{margin-top:14px}
+.gap-bot{margin-bottom:14px}
+table.plain{width:100%;border-collapse:collapse;font-size:13px}
+table.plain th{text-align:left;padding:7px 10px;background:#f7f8fa;border:1px solid #e5e7eb;font-weight:600}
+table.plain td{padding:7px 10px;border:1px solid #e5e7eb}
+table.plain tr:nth-child(even) td{background:#fafbfc}
+.hidden{display:none!important}
+
+@media(max-width:700px){
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .ba-grid{grid-template-columns:1fr}
+  .artifact-grid{grid-template-columns:1fr}
+  .tabs{gap:2px}
+  .tab-btn{font-size:12px;padding:6px 10px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ══ PAGE HEADER ══ -->
+<div class="page-header">
+  <h1>ISS Travel App — Modernization Lab Session Summary</h1>
+  <div class="sub">IBM WebSphere 9 / Java 8 / Java EE 7 &rarr; Open Liberty 24.0.0.6 / Java 17 / Jakarta EE 8 (Servlet 4.0)</div>
+  <div class="badge-row">
+    <span class="badge bg-green">BUILD SUCCESS</span>
+    <span class="badge bg-green">All 8 Endpoints Verified</span>
+    <span class="badge bg-green">1/1 Unit Tests Passing</span>
+    <span class="badge bg-blue">Java 17.0.20.1 &middot; Bytecode 61</span>
+    <span class="badge bg-purple">Open Liberty 24.0.0.6</span>
+    <span class="badge bg-gray">Maven 3.9.16</span>
+  </div>
+</div>
+
+<!-- ══ METRICS ══ -->
+<div class="metrics">
+  <div class="metric-card"><div class="num">6</div><div class="lbl">Bob prompts processed</div></div>
+  <div class="metric-card"><div class="num">14</div><div class="lbl">File operations</div></div>
+  <div class="metric-card"><div class="num">8 → 17</div><div class="lbl">Java version</div></div>
+  <div class="metric-card"><div class="num">WAS9 → OL</div><div class="lbl">Runtime</div></div>
+  <div class="metric-card"><div class="num">EAR+WAR → WAR</div><div class="lbl">Packaging</div></div>
+</div>
+
+<!-- ══ SEARCH ══ -->
+<div class="search-wrap">
+  <input type="text" id="searchInput" placeholder="&#128269;  Filter report content — type to search across all tabs…" oninput="doSearch(this.value)">
+</div>
+
+<!-- ══ TABS ══ -->
+<div class="tabs" role="tablist">
+  <button class="tab-btn active" onclick="switchTab('overview',this)">Overview</button>
+  <button class="tab-btn" onclick="switchTab('journal',this)">Session Journal</button>
+  <button class="tab-btn" onclick="switchTab('before-after',this)">Before vs After</button>
+  <button class="tab-btn" onclick="switchTab('api-tests',this)">API Tests</button>
+  <button class="tab-btn" onclick="switchTab('commands',this)">Commands Log</button>
+  <button class="tab-btn" onclick="switchTab('artifacts',this)">Artifacts</button>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 1 — OVERVIEW
+════════════════════════════════════════════ -->
+<div id="tab-overview" class="tab-pane active searchable">
+  <h2 class="section-title">Executive Summary</h2>
+  <div class="card" style="padding:16px">
+    <p>This lab session modernized the <strong>ISS Travel App</strong> from IBM WebSphere Application Server 9 (Java 8, Java EE 7, EAR+WAR) to Open Liberty 24.0.0.6 (Java 17, Jakarta EE 8, WAR-only). Six sequential Bob prompts drove the work: assessment, planning, implementation, runtime verification, dependency audit, and final reporting.</p>
+    <p class="gap-top">All four REST API contracts, all JSON response shapes, all four pre-loaded sample travel records, and the full browser UI are preserved without alteration. The only frontend change was updating three technology-label badges in <code>index.html</code>.</p>
+    <p class="gap-top">The root cause of the original build failure (<code>was-public-api:9.0</code> system-scope dependency requiring <code>WAS_HOME</code>) was removed. No IBM-proprietary classes remain in any source file. The compiled WAR carries bytecode major version <strong>61</strong> (Java 17).</p>
+  </div>
+
+  <h2 class="section-title">Session Metrics</h2>
+  <table class="plain">
+    <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Bob prompts processed</td><td>6</td></tr>
+      <tr><td>Assessment documents produced</td><td>2 (<code>modernization-assessment.md</code>, <code>modernization-plan.md</code>)</td></tr>
+      <tr><td>Final report produced</td><td>1 (<code>iss-travel-modernization-final-report.html</code>)</td></tr>
+      <tr><td>Maven commands executed</td><td>6 (<code>clean package</code>, <code>liberty:start</code>, <code>liberty:deploy</code>, <code>test</code>, <code>clean package</code> × 2)</td></tr>
+      <tr><td>cURL endpoint tests</td><td>8</td></tr>
+      <tr><td>Java source files modified</td><td>5</td></tr>
+      <tr><td>Java source files unchanged</td><td>4</td></tr>
+      <tr><td>XML/config files modified</td><td>3 (<code>pom.xml</code>, <code>legacy-web/pom.xml</code>, <code>web.xml</code>)</td></tr>
+      <tr><td>Files deleted</td><td>6 (legacy-ear + 3 IBM descriptors)</td></tr>
+      <tr><td>Files created</td><td>1 (<code>server.xml</code>)</td></tr>
+      <tr><td>IBM API imports eliminated</td><td>4 classes across 4 packages</td></tr>
+      <tr><td>Build failures during migration</td><td>0 (all changes applied before first build attempt)</td></tr>
+      <tr><td>Unit test failures</td><td>0</td></tr>
+      <tr><td>API endpoint verification failures</td><td>0</td></tr>
+      <tr><td>Code changes required during runtime verification</td><td>0</td></tr>
+      <tr><td>Java version (before)</td><td>1.8 / Java 8</td></tr>
+      <tr><td>Java version (after)</td><td>17 / Java 17.0.20.1 (Red Hat OpenJDK)</td></tr>
+      <tr><td>Bytecode major version (after)</td><td>61</td></tr>
+      <tr><td>Runtime (before)</td><td>IBM WebSphere Application Server 9</td></tr>
+      <tr><td>Runtime (after)</td><td>Open Liberty 24.0.0.6</td></tr>
+      <tr><td>Packaging (before)</td><td>EAR (version 7) + WAR (Servlet 3.1)</td></tr>
+      <tr><td>Packaging (after)</td><td>WAR only (Servlet 4.0)</td></tr>
+      <tr><td>Liberty startup time (observed)</td><td>4.141 seconds</td></tr>
+      <tr><td>Application deploy time (observed)</td><td>0.560 seconds</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 2 — SESSION JOURNAL
+════════════════════════════════════════════ -->
+<div id="tab-journal" class="tab-pane searchable">
+  <h2 class="section-title">Step-by-Step Lab Session Journal</h2>
+  <p class="muted gap-bot">Click any step card to expand details. All outcomes are based on observed session evidence.</p>
+
+  <!-- Step 1 -->
+  <div class="card searchable-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div style="display:flex;align-items:center"><span class="step-badge">1</span><h3>Legacy Codebase Analysis &amp; Modernization Assessment</h3></div>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="card-body open">
+      <p><strong>Prompt:</strong> Analyse the legacy Java application and produce a modernization assessment. Do not modify any files.</p>
+      <p class="gap-top"><strong>Files inspected (22):</strong></p>
+      <ul class="file-list gap-top">
+        <li><span class="file-action fa-unch">READ</span><code>pom.xml</code> — parent POM: Java 1.8, 2 modules</li>
+        <li><span class="file-action fa-unch">READ</span><code>legacy-web/pom.xml</code> — WAS system dep, javaee-api:7.0</li>
+        <li><span class="file-action fa-unch">READ</span><code>legacy-ear/pom.xml</code> — maven-ear-plugin version 7</li>
+        <li><span class="file-action fa-unch">READ</span><code>LegacyNamingFactory.java</code> — WsnInitialContextFactory import</li>
+        <li><span class="file-action fa-unch">READ</span><code>WebSphereSecurityUtil.java</code> — WSSecurityHelper import</li>
+        <li><span class="file-action fa-unch">READ</span><code>WebSphereServerInfo.java</code> — ServerName import</li>
+        <li><span class="file-action fa-unch">READ</span><code>TravelRequest.java</code></li>
+        <li><span class="file-action fa-unch">READ</span><code>TravelRepository.java</code></li>
+        <li><span class="file-action fa-unch">READ</span><code>JsonUtil.java</code></li>
+        <li><span class="file-action fa-unch">READ</span><code>HealthServlet.java</code> — ResponseUtils + WebSphereServerInfo</li>
+        <li><span class="file-action fa-unch">READ</span><code>TravelServlet.java</code> — ResponseUtils + WebSphereSecurityUtil</li>
+        <li><span class="file-action fa-unch">READ</span><code>web.xml</code> — Servlet 3.1 schema</li>
+        <li><span class="file-action fa-unch">READ</span><code>ibm-web-bnd.xml</code>, <code>ibm-web-ext.xml</code>, <code>ibm-metadata.xml</code></li>
+        <li><span class="file-action fa-unch">READ</span><code>application.xml</code> — EAR Java EE 7 version 7</li>
+        <li><span class="file-action fa-unch">READ</span><code>TravelRepositoryTest.java</code></li>
+        <li><span class="file-action fa-unch">READ</span><code>index.html</code>, <code>main.js</code></li>
+        <li><span class="file-action fa-unch">READ</span><code>README.md</code>, <code>MODERNIZATION-TASK.md</code></li>
+      </ul>
+      <p class="gap-top"><strong>Output produced:</strong></p>
+      <ul class="file-list gap-top">
+        <li><span class="file-action fa-new">CREATE</span><code>modernization-assessment.md</code> — 353 lines, 11 sections</li>
+      </ul>
+      <p class="gap-top"><strong>Key findings:</strong></p>
+      <ul style="padding-left:18px;font-size:13px;margin-top:6px">
+        <li>Root cause of build failure: <code>${env.WAS_HOME}</code> path in system-scope dep</li>
+        <li>4 IBM API packages used across 5 Java classes</li>
+        <li>3 IBM-only deployment descriptors</li>
+        <li>EAR adds no value beyond context-root declaration</li>
+        <li>5 files (model, repo, util, tests, frontend) are fully portable — no changes needed</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="card searchable-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div style="display:flex;align-items:center"><span class="step-badge">2</span><h3>Detailed Modernization Plan with Before/After Diffs</h3></div>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <p><strong>Prompt:</strong> Create a detailed modernization plan based on modernization-assessment.md. Show every file changed, removed, or created with before/after diffs. Do not perform the migration yet.</p>
+      <p class="gap-top"><strong>Files read:</strong> <code>modernization-assessment.md</code> (full content)</p>
+      <p class="gap-top"><strong>Output produced:</strong></p>
+      <ul class="file-list gap-top">
+        <li><span class="file-action fa-new">CREATE</span><code>modernization-plan.md</code> — 420 lines; 9 sections including complete before/after diffs and 20-item verification checklist</li>
+      </ul>
+      <p class="gap-top"><strong>Plan defined 12 ordered execution steps:</strong></p>
+      <ol style="padding-left:20px;font-size:13px;margin-top:6px">
+        <li>Remove legacy-ear module from parent pom.xml</li>
+        <li>Update parent pom.xml — Java 17 compiler properties</li>
+        <li>Rewrite legacy-web/pom.xml</li>
+        <li>Delete IBM deployment descriptors</li>
+        <li>Update web.xml — Servlet 4.0</li>
+        <li>Rewrite LegacyNamingFactory.java</li>
+        <li>Rewrite WebSphereSecurityUtil.java</li>
+        <li>Rewrite WebSphereServerInfo.java</li>
+        <li>Patch HealthServlet.java</li>
+        <li>Patch TravelServlet.java</li>
+        <li>Update index.html badge strings</li>
+        <li>Create server.xml</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="card searchable-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div style="display:flex;align-items:center"><span class="step-badge">3</span><h3>Migration Implementation</h3></div>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <p><strong>Prompt:</strong> Implement the modernization plan. After all changes, run <code>mvn clean package -f legacy-web/pom.xml</code>. Fix any errors. Confirm Java 17 bytecode.</p>
+      <p class="gap-top"><strong>Files modified:</strong></p>
+      <ul class="file-list gap-top">
+        <li><span class="file-action fa-mod">MOD</span><code>pom.xml</code> — removed legacy-ear module; 1.8→17</li>
+        <li><span class="file-action fa-mod">MOD</span><code>legacy-web/pom.xml</code> — removed was-public-api; replaced javaee-api with servlet-api:4.0.1; added liberty-maven-plugin:3.10.3; 1.8→17</li>
+        <li><span class="file-action fa-mod">MOD</span><code>WEB-INF/web.xml</code> — web-app_3_1.xsd → web-app_4_0.xsd; version 3.1→4.0</li>
+        <li><span class="file-action fa-mod">MOD</span><code>LegacyNamingFactory.java</code> — WsnInitialContextFactory → new InitialContext()</li>
+        <li><span class="file-action fa-mod">MOD</span><code>WebSphereSecurityUtil.java</code> — WSSecurityHelper → java.security.Principal parameter</li>
+        <li><span class="file-action fa-mod">MOD</span><code>WebSphereServerInfo.java</code> — ServerName.getFullName() → "Open Liberty"</li>
+        <li><span class="file-action fa-mod">MOD</span><code>HealthServlet.java</code> — removed ResponseUtils; runtime label → "Open Liberty"</li>
+        <li><span class="file-action fa-mod">MOD</span><code>TravelServlet.java</code> — removed ResponseUtils; security → req.getUserPrincipal()</li>
+        <li><span class="file-action fa-mod">MOD</span><code>index.html</code> — 3 badge strings only</li>
+      </ul>
+      <p class="gap-top"><strong>Files deleted:</strong></p>
+      <ul class="file-list gap-top">
+        <li><span class="file-action fa-del">DEL</span><code>legacy-ear/</code> — entire directory tree</li>
+        <li><span class="file-action fa-del">DEL</span><code>WEB-INF/ibm-web-bnd.xml</code></li>
+        <li><span class="file-action fa-del">DEL</span><code>WEB-INF/ibm-web-ext.xml</code></li>
+        <li><span class="file-action fa-del">DEL</span><code>WEB-INF/ibm-metadata.xml</code></li>
+      </ul>
+      <p class="gap-top"><strong>Files created:</strong></p>
+      <ul class="file-list gap-top">
+        <li><span class="file-action fa-new">CREATE</span><code>legacy-web/src/main/liberty/config/server.xml</code> — servlet-4.0 feature, port 9080, contextRoot /iss-travel</li>
+      </ul>
+      <p class="gap-top"><strong>Build result:</strong> <span class="ok-tick">&#10003; BUILD SUCCESS</span> — Total time: 4.123 s</p>
+      <p><strong>Test result:</strong> <span class="ok-tick">&#10003;</span> Tests run: 1, Failures: 0, Errors: 0, Skipped: 0</p>
+      <p><strong>Bytecode verification:</strong> <span class="ok-tick">&#10003;</span> major version: 61 (Java 17) on all 5 key classes</p>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="card searchable-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div style="display:flex;align-items:center"><span class="step-badge">4</span><h3>Runtime Verification on Open Liberty</h3></div>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <p><strong>Prompt:</strong> Run the application on Open Liberty and verify all endpoints. Report actual HTTP status codes and response bodies.</p>
+      <p class="gap-top"><strong>Commands executed:</strong></p>
+      <ol style="padding-left:20px;font-size:13px;margin-top:6px">
+        <li><code>mvn liberty:start -f legacy-web/pom.xml</code> — Open Liberty 24.0.0.6 downloaded (333 MB) and started</li>
+        <li><code>mvn liberty:deploy -f legacy-web/pom.xml</code> — WAR deployed</li>
+        <li>8 × cURL requests to verify all endpoints</li>
+      </ol>
+      <p class="gap-top"><strong>Liberty startup log:</strong></p>
+      <div class="payload">CWWKF0011I: The defaultServer server is ready to run a smarter planet.
+              The defaultServer server started in 4.141 seconds.
+CWWKZ0001I: Application iss-travel started in 0.560 seconds.</div>
+      <p class="gap-top"><strong>Outcome:</strong> <span class="ok-tick">&#10003;</span> All 8 endpoint checks passed. Zero code changes required during verification.</p>
+    </div>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="card searchable-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div style="display:flex;align-items:center"><span class="step-badge">5</span><h3>WebSphere Dependency Audit</h3></div>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <p><strong>Prompt:</strong> Search the entire project and confirm no remaining WebSphere-specific runtime dependencies. Check 9 criteria explicitly.</p>
+      <p class="gap-top"><strong>Commands executed (grep scans):</strong> 7 grep commands across all source trees</p>
+      <p class="gap-top"><strong>Results — all 9 checks CLEAN:</strong></p>
+      <table class="plain gap-top">
+        <thead><tr><th>#</th><th>Check</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>com.ibm.websphere.*</code> imports</td><td class="ok-tick">&#10003; CLEAN — 0 matches</td></tr>
+          <tr><td>2</td><td><code>com.ibm.ws.*</code> imports</td><td class="ok-tick">&#10003; CLEAN — 0 matches</td></tr>
+          <tr><td>3</td><td><code>WAS_HOME</code> references</td><td class="ok-tick">&#10003; CLEAN — 0 matches</td></tr>
+          <tr><td>4</td><td><code>com.ibm.ws.runtime.jar</code> references</td><td class="ok-tick">&#10003; CLEAN — 0 matches</td></tr>
+          <tr><td>5</td><td><code>was_public</code> / <code>was-public</code> references</td><td class="ok-tick">&#10003; CLEAN — 0 matches</td></tr>
+          <tr><td>6</td><td>IBM deployment descriptors in WEB-INF/</td><td class="ok-tick">&#10003; CLEAN — all 3 deleted</td></tr>
+          <tr><td>7</td><td><code>legacy-ear/</code> directory</td><td class="ok-tick">&#10003; CLEAN — deleted</td></tr>
+          <tr><td>8</td><td>Java 17 bytecode (major version 61)</td><td class="ok-tick">&#10003; major=61, minor=0 on all 8 classes</td></tr>
+          <tr><td>9</td><td>Unit test passes</td><td class="ok-tick">&#10003; 1/1 PASS — BUILD SUCCESS</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Step 6 -->
+  <div class="card searchable-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div style="display:flex;align-items:center"><span class="step-badge">6</span><h3>Final Report Generation</h3></div>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <p><strong>Prompt:</strong> Create a comprehensive final modernization report as <code>iss-travel-modernization-final-report.html</code> covering all migration aspects.</p>
+      <p class="gap-top"><strong>Files created:</strong></p>
+      <ul class="file-list gap-top">
+        <li><span class="file-action fa-new">CREATE</span><code>iss-travel-modernization-final-report.html</code> — standalone HTML report with before/after architecture, file inventory, build results, full API verification table, dependency changelog, and risk register</li>
+        <li><span class="file-action fa-new">CREATE</span><code>lab-session-summary.html</code> — this interactive lab session summary</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 3 — BEFORE vs AFTER
+════════════════════════════════════════════ -->
+<div id="tab-before-after" class="tab-pane searchable">
+  <h2 class="section-title">Architecture: Before vs After</h2>
+
+  <div class="ba-grid">
+    <div class="ba-box ba-before">
+      <h3>&#9888; Before — Legacy (WebSphere 9 / Java 8)</h3>
+      <pre>Browser
+  |  index.html + main.js
+  v
+IBM WebSphere AS 9  (Java EE 7)
+  |
+  +-- EAR: iss-travel-enterprise.ear
+  |    +-- WAR: iss-travel.war
+  |         +-- TravelServlet
+  |         +-- HealthServlet
+  |         +-- (model/repo/util)
+  |
+  +-- WAS runtime APIs
+  |    +-- ResponseUtils (com.ibm.ws.*)
+  |    +-- WSSecurityHelper (com.ibm.websphere.*)
+  |    +-- ServerName (com.ibm.websphere.*)
+  |    +-- WsnInitialContextFactory
+  |
+  +-- IBM descriptors (WEB-INF/)
+       +-- ibm-web-bnd.xml
+       +-- ibm-web-ext.xml
+       +-- ibm-metadata.xml
+
+Maven modules: legacy-web + legacy-ear
+Build: FAILS (WAS_HOME not set)</pre>
+    </div>
+    <div class="ba-box ba-after">
+      <h3>&#10003; After — Modern (Open Liberty 24 / Java 17)</h3>
+      <pre>Browser
+  |  index.html + main.js (unchanged)
+  v
+Open Liberty 24.0.0.6  (Java 17, port 9080)
+  |
+  +-- server.xml
+  |    +-- feature: servlet-4.0
+  |    +-- httpEndpoint: 9080/9443
+  |    +-- webApplication: /iss-travel
+  |
+  +-- WAR: iss-travel.war  (only artifact)
+       +-- TravelServlet  (standard javax.servlet)
+       +-- HealthServlet  (standard javax.servlet)
+       +-- WebSphereSecurityUtil (portable)
+       +-- WebSphereServerInfo  (portable)
+       +-- LegacyNamingFactory  (portable)
+       +-- (model/repo/util unchanged)
+
+Maven modules: legacy-web only
+Build: SUCCESS (4.123 s)</pre>
+    </div>
+  </div>
+
+  <h2 class="section-title">Comparison Matrix</h2>
+  <table class="comp-table">
+    <thead><tr><th style="width:22%">Dimension</th><th>Before</th><th>After</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Java version</strong></td>
+        <td class="old">Java 8 (<code>source=1.8 target=1.8</code>)<br>Bytecode major 52</td>
+        <td class="new">Java 17 (<code>source=17 target=17</code>)<br>Bytecode major 61</td>
+      </tr>
+      <tr>
+        <td><strong>Application server</strong></td>
+        <td class="old">IBM WebSphere Application Server 9<br>(requires on-premise WAS installation)</td>
+        <td class="new">Open Liberty 24.0.0.6<br>(downloaded by Maven; no pre-install needed)</td>
+      </tr>
+      <tr>
+        <td><strong>Java EE / Jakarta EE spec</strong></td>
+        <td class="old">Java EE 7<br><code>javax:javaee-api:7.0</code> (provided)</td>
+        <td class="new">Jakarta EE 8 (Servlet 4.0)<br><code>javax.servlet-api:4.0.1</code> (provided)</td>
+      </tr>
+      <tr>
+        <td><strong>Servlet version</strong></td>
+        <td class="old">Servlet 3.1<br><code>web-app_3_1.xsd</code></td>
+        <td class="new">Servlet 4.0<br><code>web-app_4_0.xsd</code></td>
+      </tr>
+      <tr>
+        <td><strong>Packaging</strong></td>
+        <td class="old">EAR (version 7) + WAR<br>2 Maven modules</td>
+        <td class="new">WAR only<br>1 Maven module</td>
+      </tr>
+      <tr>
+        <td><strong>Context root config</strong></td>
+        <td class="old"><code>application.xml</code> inside EAR</td>
+        <td class="new"><code>server.xml</code> <code>&lt;webApplication contextRoot="/iss-travel"&gt;</code></td>
+      </tr>
+      <tr>
+        <td><strong>IBM proprietary APIs</strong></td>
+        <td class="old"><code>com.ibm.ws.webcontainer.util.ResponseUtils</code><br><code>com.ibm.websphere.security.WSSecurityHelper</code><br><code>com.ibm.websphere.runtime.ServerName</code><br><code>com.ibm.websphere.naming.WsnInitialContextFactory</code></td>
+        <td class="new">None — all replaced with standard Java/Servlet APIs:<br><code>resp.setContentType()</code><br><code>req.getUserPrincipal()</code><br>Static string <code>"Open Liberty"</code><br><code>new InitialContext()</code></td>
+      </tr>
+      <tr>
+        <td><strong>WAS system dependency</strong></td>
+        <td class="old"><code>was-public-api:9.0</code> (system scope)<br>Requires <code>${env.WAS_HOME}</code> — build fails without it</td>
+        <td class="new">Removed entirely</td>
+      </tr>
+      <tr>
+        <td><strong>IBM deployment descriptors</strong></td>
+        <td class="old"><code>ibm-web-bnd.xml</code>, <code>ibm-web-ext.xml</code>, <code>ibm-metadata.xml</code></td>
+        <td class="new">All deleted — <code>WEB-INF/</code> contains only <code>web.xml</code></td>
+      </tr>
+      <tr>
+        <td><strong>Liberty Maven plugin</strong></td>
+        <td class="old">Not present</td>
+        <td class="new"><code>io.openliberty.tools:liberty-maven-plugin:3.10.3</code></td>
+      </tr>
+      <tr>
+        <td><strong>Build result</strong></td>
+        <td class="old">&#10007; BUILD FAILURE<br><em>'systemPath' must specify absolute path</em></td>
+        <td class="new">&#10003; BUILD SUCCESS — 4.123 s<br>Tests run: 1, Failures: 0</td>
+      </tr>
+      <tr>
+        <td><strong>UI technology labels</strong></td>
+        <td class="old">"Legacy Java EE 7" / "IBM WebSphere 9" / "Java 8"</td>
+        <td class="new">"Jakarta EE 8" / "Open Liberty" / "Java 17"</td>
+      </tr>
+      <tr>
+        <td><strong>REST API contracts</strong></td>
+        <td>GET /api/trips, POST /api/trips, GET /api/trips?id, GET /api/health</td>
+        <td class="new">Preserved — identical paths, HTTP methods, status codes, and JSON shapes</td>
+      </tr>
+      <tr>
+        <td><strong>Frontend (index.html / main.js)</strong></td>
+        <td>Browser UI with Add Travel Request form</td>
+        <td class="new">Preserved — only 3 badge text strings updated; main.js untouched</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 4 — API TESTS
+════════════════════════════════════════════ -->
+<div id="tab-api-tests" class="tab-pane searchable">
+  <h2 class="section-title">API Test Matrix</h2>
+  <p class="muted gap-bot">All tests performed against <code>http://localhost:9080/iss-travel/</code> running Open Liberty 24.0.0.6 on Java 17.0.20.1. Evidence observed during Step 4 of the lab session.</p>
+
+  <table class="api-table">
+    <thead>
+      <tr>
+        <th style="width:9%">Method</th>
+        <th style="width:25%">Path</th>
+        <th style="width:9%">Expected</th>
+        <th style="width:9%">Actual</th>
+        <th style="width:10%">Result</th>
+        <th>Response payload (observed)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="method m-get">GET</span></td>
+        <td><code>/api/health</code></td>
+        <td>200</td>
+        <td class="status-ok">200</td>
+        <td class="ok-tick">&#10003; PASS</td>
+        <td><div class="payload">{"status":"UP","runtime":"Open Liberty","server":"Open Liberty","java":"17.0.20.1"}</div></td>
+      </tr>
+      <tr>
+        <td><span class="method m-get">GET</span></td>
+        <td><code>/api/trips</code></td>
+        <td>200</td>
+        <td class="status-ok">200</td>
+        <td class="ok-tick">&#10003; PASS</td>
+        <td><div class="payload">[{"id":1001,"traveler":"Elena Torres","destination":"Houston, TX","purpose":"Mission operations readiness review","departureDate":"2026-10-03","status":"APPROVED"},{"id":1002,"traveler":"Marcus Lee","destination":"Cape Canaveral, FL","purpose":"Crew launch support","departureDate":"2026-10-11","status":"PENDING"},{"id":1003,"traveler":"Aisha Rahman","destination":"Cologne, Germany","purpose":"ESA payload integration workshop","departureDate":"2026-11-02","status":"APPROVED"},{"id":1004,"traveler":"Daniel Novak","destination":"Tsukuba, Japan","purpose":"JAXA systems coordination","departureDate":"2026-11-14","status":"REVIEW"}]</div></td>
+      </tr>
+      <tr>
+        <td><span class="method m-get">GET</span></td>
+        <td><code>/api/trips?id=1001</code></td>
+        <td>200</td>
+        <td class="status-ok">200</td>
+        <td class="ok-tick">&#10003; PASS</td>
+        <td><div class="payload">{"id":1001,"traveler":"Elena Torres","destination":"Houston, TX","purpose":"Mission operations readiness review","departureDate":"2026-10-03","status":"APPROVED"}</div></td>
+      </tr>
+      <tr>
+        <td><span class="method m-get">GET</span></td>
+        <td><code>/api/trips?id=9999</code></td>
+        <td>404</td>
+        <td class="status-ok">404</td>
+        <td class="ok-tick">&#10003; PASS</td>
+        <td><div class="payload">{"error":"Travel request not found"}</div></td>
+      </tr>
+      <tr>
+        <td><span class="method m-post">POST</span></td>
+        <td><code>/api/trips</code></td>
+        <td>201</td>
+        <td class="status-ok">201</td>
+        <td class="ok-tick">&#10003; PASS</td>
+        <td>
+          <div style="font-size:11px;color:#57606a;margin-bottom:4px">Request body:</div>
+          <div class="payload">{"traveler":"Sarah Mitchell","destination":"Baikonur, Kazakhstan","purpose":"Soyuz docking coordination","departureDate":"2026-12-05","status":"PENDING"}</div>
+          <div style="font-size:11px;color:#57606a;margin:6px 0 4px">Response body:</div>
+          <div class="payload">{"id":1005,"traveler":"Sarah Mitchell","destination":"Baikonur, Kazakhstan","purpose":"Soyuz docking coordination","departureDate":"2026-12-05","status":"PENDING"}</div>
+        </td>
+      </tr>
+      <tr>
+        <td><span class="method m-get">GET</span></td>
+        <td><code>/api/trips</code><br><span class="muted">(after POST)</span></td>
+        <td>200, 5 records</td>
+        <td class="status-ok">200, 5 records</td>
+        <td class="ok-tick">&#10003; PASS</td>
+        <td><div class="payload">id=1001 Elena Torres  APPROVED
+id=1002 Marcus Lee    PENDING
+id=1003 Aisha Rahman  APPROVED
+id=1004 Daniel Novak  REVIEW
+id=1005 Sarah Mitchell PENDING  &lt;-- newly created</div></td>
+      </tr>
+      <tr>
+        <td><span class="method m-get">GET</span></td>
+        <td><code>/iss-travel/</code><br><span class="muted">(browser UI)</span></td>
+        <td>200, HTML</td>
+        <td class="status-ok">200, HTML (3903 bytes)</td>
+        <td class="ok-tick">&#10003; PASS</td>
+        <td><div class="payload">Content-Type: text/html
+Content-Length: 3903
+X-Powered-By: Servlet/4.0
+
+&lt;span class="pill"&gt;Jakarta EE 8&lt;/span&gt;
+&lt;span class="pill"&gt;Open Liberty&lt;/span&gt;
+&lt;span class="pill"&gt;Java 17&lt;/span&gt;</div></td>
+      </tr>
+      <tr>
+        <td>—</td>
+        <td>Technology labels</td>
+        <td>Jakarta EE 8 / Open Liberty / Java 17</td>
+        <td class="status-ok">All 3 confirmed</td>
+        <td class="ok-tick">&#10003; PASS</td>
+        <td><div class="payload">Confirmed via: grep -E 'pill' in GET /iss-travel/ response body</div></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="muted gap-top">Response headers observed on all JSON endpoints: <code>X-Powered-By: Servlet/4.0</code> &middot; <code>Content-Language: en</code> &middot; <code>X-Legacy-User: anonymous</code> (on /api/trips)</p>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 5 — COMMANDS LOG
+════════════════════════════════════════════ -->
+<div id="tab-commands" class="tab-pane searchable">
+  <h2 class="section-title">All Commands Log</h2>
+  <p class="muted gap-bot">All commands actually executed during the lab session. Click <strong>Copy</strong> to copy any block.</p>
+
+  <h3 class="gap-top gap-bot">Build &amp; Compile</h3>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">Step 3 — Build after migration (first clean compile)</span>
+      <button class="copy-btn" onclick="copyCmd(this,'mvn clean package -f legacy-web/pom.xml')">Copy</button>
+    </div>
+    <pre>mvn clean package -f legacy-web/pom.xml</pre>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">Step 3 — Verify Java 17 bytecode (major version 61)</span>
+      <button class="copy-btn" onclick="copyCmd(this,'javap -verbose legacy-web/target/classes/com/ibm/demo/isstravel/web/TravelServlet.class | grep \"major version\"')">Copy</button>
+    </div>
+    <pre>javap -verbose legacy-web/target/classes/com/ibm/demo/isstravel/web/TravelServlet.class | grep "major version"
+# Output: major version: 61</pre>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">Step 5 — Run unit tests in isolation</span>
+      <button class="copy-btn" onclick="copyCmd(this,'mvn test -f legacy-web/pom.xml')">Copy</button>
+    </div>
+    <pre>mvn test -f legacy-web/pom.xml</pre>
+  </div>
+
+  <h3 class="gap-top gap-bot">Open Liberty Lifecycle</h3>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">Step 4 — Start Open Liberty server</span>
+      <button class="copy-btn" onclick="copyCmd(this,'mvn liberty:start -f legacy-web/pom.xml')">Copy</button>
+    </div>
+    <pre>mvn liberty:start -f legacy-web/pom.xml</pre>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">Step 4 — Deploy WAR to running Liberty server</span>
+      <button class="copy-btn" onclick="copyCmd(this,'mvn liberty:deploy -f legacy-web/pom.xml')">Copy</button>
+    </div>
+    <pre>mvn liberty:deploy -f legacy-web/pom.xml</pre>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">Alternative — Start, deploy and tail logs in one command</span>
+      <button class="copy-btn" onclick="copyCmd(this,'mvn liberty:run -f legacy-web/pom.xml')">Copy</button>
+    </div>
+    <pre>mvn liberty:run -f legacy-web/pom.xml</pre>
+  </div>
+
+  <h3 class="gap-top gap-bot">Endpoint Verification (cURL)</h3>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">GET /api/health</span>
+      <button class="copy-btn" onclick="copyCmd(this,'curl -si http://localhost:9080/iss-travel/api/health')">Copy</button>
+    </div>
+    <pre>curl -si http://localhost:9080/iss-travel/api/health
+# HTTP/1.1 200 OK
+# {"status":"UP","runtime":"Open Liberty","server":"Open Liberty","java":"17.0.20.1"}</pre>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">GET /api/trips — all records</span>
+      <button class="copy-btn" onclick="copyCmd(this,'curl -si http://localhost:9080/iss-travel/api/trips')">Copy</button>
+    </div>
+    <pre>curl -si http://localhost:9080/iss-travel/api/trips
+# HTTP/1.1 200 OK  (4 records)</pre>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">GET /api/trips?id=1001 — single record</span>
+      <button class="copy-btn" onclick="copyCmd(this,'curl -si \"http://localhost:9080/iss-travel/api/trips?id=1001\"')">Copy</button>
+    </div>
+    <pre>curl -si "http://localhost:9080/iss-travel/api/trips?id=1001"
+# HTTP/1.1 200 OK  (Elena Torres record)</pre>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">GET /api/trips?id=9999 — not found</span>
+      <button class="copy-btn" onclick="copyCmd(this,'curl -si \"http://localhost:9080/iss-travel/api/trips?id=9999\"')">Copy</button>
+    </div>
+    <pre>curl -si "http://localhost:9080/iss-travel/api/trips?id=9999"
+# HTTP/1.1 404 Not Found
+# {"error":"Travel request not found"}</pre>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">POST /api/trips — create new request</span>
+      <button class="copy-btn" onclick="copyCmd(this,`curl -si -X POST http://localhost:9080/iss-travel/api/trips \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"traveler\":\"Sarah Mitchell\",\"destination\":\"Baikonur, Kazakhstan\",\"purpose\":\"Soyuz docking coordination\",\"departureDate\":\"2026-12-05\",\"status\":\"PENDING\"}'`)">Copy</button>
+    </div>
+    <pre>curl -si -X POST http://localhost:9080/iss-travel/api/trips \
+  -H "Content-Type: application/json" \
+  -d '{"traveler":"Sarah Mitchell","destination":"Baikonur, Kazakhstan","purpose":"Soyuz docking coordination","departureDate":"2026-12-05","status":"PENDING"}'
+# HTTP/1.1 201 Created
+# {"id":1005,"traveler":"Sarah Mitchell",...}</pre>
+  </div>
+
+  <h3 class="gap-top gap-bot">WebSphere Dependency Audit (grep scans)</h3>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">Step 5 — Scan for all IBM imports (5 pattern checks)</span>
+      <button class="copy-btn" onclick="copyCmd(this,`grep -r \"com\\.ibm\\.websphere\\.\" --include=\"*.java\" --include=\"*.xml\" -l . | grep -v target/\ngrep -r \"com\\.ibm\\.ws\\.\" --include=\"*.java\" --include=\"*.xml\" -l . | grep -v target/\ngrep -r \"WAS_HOME\" --include=\"*.xml\" --include=\"*.java\" . | grep -v target/\ngrep -r \"ws\\.runtime\\.jar\" --include=\"*.xml\" . | grep -v target/\ngrep -ri \"was-public\" --include=\"*.xml\" . | grep -v target/`)">Copy</button>
+    </div>
+    <pre>grep -r "com\.ibm\.websphere\." --include="*.java" --include="*.xml" -l . | grep -v target/
+grep -r "com\.ibm\.ws\." --include="*.java" --include="*.xml" -l . | grep -v target/
+grep -r "WAS_HOME" --include="*.xml" --include="*.java" . | grep -v target/
+grep -r "ws\.runtime\.jar" --include="*.xml" . | grep -v target/
+grep -ri "was-public" --include="*.xml" . | grep -v target/
+# All returned: CLEAN (no output = no matches)</pre>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">Step 5 — Confirm IBM descriptors deleted</span>
+      <button class="copy-btn" onclick="copyCmd(this,'ls legacy-web/src/main/webapp/WEB-INF/')">Copy</button>
+    </div>
+    <pre>ls legacy-web/src/main/webapp/WEB-INF/
+# web.xml   (only file present)</pre>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">Step 5 — Confirm legacy-ear/ deleted</span>
+      <button class="copy-btn" onclick="copyCmd(this,'ls legacy-ear/ 2>/dev/null || echo \"legacy-ear/ does not exist\"')">Copy</button>
+    </div>
+    <pre>ls legacy-ear/ 2>/dev/null || echo "legacy-ear/ does not exist"
+# legacy-ear/ does not exist</pre>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">Step 5 — Verify bytecode on all key classes</span>
+      <button class="copy-btn" onclick="copyCmd(this,'for c in TravelServlet HealthServlet LegacyNamingFactory WebSphereSecurityUtil WebSphereServerInfo; do\n  javap -verbose legacy-web/target/classes/com/ibm/demo/isstravel/**/$c.class 2>/dev/null | grep \"major version\"\ndone')">Copy</button>
+    </div>
+    <pre>for c in TravelServlet HealthServlet LegacyNamingFactory WebSphereSecurityUtil WebSphereServerInfo; do
+  javap -verbose legacy-web/target/classes/com/ibm/demo/isstravel/**/$c.class 2>/dev/null | grep "major version"
+done
+# major version: 61   (×5)</pre>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 6 — ARTIFACTS
+════════════════════════════════════════════ -->
+<div id="tab-artifacts" class="tab-pane searchable">
+  <h2 class="section-title">Created Artifacts</h2>
+  <p class="muted gap-bot">All documents, configuration files, and reports produced during the lab session.</p>
+
+  <div class="artifact-grid">
+    <div class="artifact-card">
+      <div class="af-icon">&#128203;</div>
+      <div class="af-name">modernization-assessment.md</div>
+      <div class="af-type">Markdown document &middot; 353 lines &middot; Step 1</div>
+      <div class="af-desc">Complete technical analysis of the legacy codebase. 11 sections covering: current architecture, 22 technical debt items, WebSphere-specific dependencies (Maven + Java + descriptors), Java EE API inventory, EAR/WAR packaging analysis, blockers preventing vanilla-JVM execution, REST API contract specification, migration risk register, target architecture recommendation, and step-by-step modernization steps.</div>
+    </div>
+    <div class="artifact-card">
+      <div class="af-icon">&#128196;</div>
+      <div class="af-name">modernization-plan.md</div>
+      <div class="af-type">Markdown document &middot; 420 lines &middot; Step 2</div>
+      <div class="af-desc">Detailed implementation plan with before/after unified diffs for every modified file. 9 sections: summary table, target architecture diagram, 12-step execution order, complete file inventory (19 entries), full diffs for all 9 modified files, files to delete, new files to create, unchanged files list, and 20-item verification checklist.</div>
+    </div>
+    <div class="artifact-card">
+      <div class="af-icon">&#9881;</div>
+      <div class="af-name">legacy-web/src/main/liberty/config/server.xml</div>
+      <div class="af-type">XML configuration &middot; 16 lines &middot; Step 3</div>
+      <div class="af-desc">Open Liberty runtime configuration. Declares the <code>servlet-4.0</code> feature, HTTP endpoint on port 9080 / HTTPS on 9443, and the WAR deployment at context root <code>/iss-travel</code>. Replaces the context-root registration previously performed by the EAR's <code>application.xml</code>.</div>
+    </div>
+    <div class="artifact-card">
+      <div class="af-icon">&#128230;</div>
+      <div class="af-name">legacy-web/target/iss-travel.war</div>
+      <div class="af-type">Java WAR archive &middot; Step 3 &middot; runtime artifact</div>
+      <div class="af-desc">Compiled and packaged WAR. Contains 8 Java class files (bytecode major version 61 / Java 17), <code>web.xml</code> (Servlet 4.0), <code>index.html</code>, and <code>main.js</code>. No IBM proprietary JARs or descriptors included. Deployed to Liberty's <code>apps/</code> directory.</div>
+    </div>
+    <div class="artifact-card">
+      <div class="af-icon">&#128202;</div>
+      <div class="af-name">iss-travel-modernization-final-report.html</div>
+      <div class="af-type">Standalone HTML report &middot; Step 6</div>
+      <div class="af-desc">Self-contained static HTML report covering: executive summary with 4 metrics cards, before/after architecture (side-by-side), complete file inventory table, Java 8→17 change log, WebSphere→Liberty API and configuration substitution tables, <code>server.xml</code> listing, dependencies removed/added/unchanged, before (failure) and after (success) Maven build output, full API verification with actual response bodies, WebSphere dependency audit, and 7-item risk register.</div>
+    </div>
+    <div class="artifact-card">
+      <div class="af-icon">&#128196;</div>
+      <div class="af-name">lab-session-summary.html</div>
+      <div class="af-type">Interactive HTML report &middot; Step 6 &middot; this file</div>
+      <div class="af-desc">Comprehensive interactive lab session summary with tabbed navigation, collapsible step cards, real-time search/filter, copy-to-clipboard command blocks, API test matrix with observed payloads, before/after architecture comparison matrix, artifact registry, and session metrics. Fully self-contained — no external dependencies.</div>
+    </div>
+  </div>
+
+  <h2 class="section-title gap-top">Final Workspace State</h2>
+  <p class="muted gap-bot">Workspace file tree after migration (excluding <code>target/</code>). Observed via <code>find</code> command.</p>
+  <div class="cmd-block">
+    <div class="cmd-block-header">
+      <span class="cmd-label">Current workspace (source files only)</span>
+      <button class="copy-btn" onclick="copyCmd(this,'find . -not -path \"./target/*\" -not -path \"./.git/*\" -not -path \"./legacy-web/target/*\" | sort')">Copy</button>
+    </div>
+    <pre>iss-travel-legacy/
+├── pom.xml                          ← 1 module; Java 17
+├── README.md
+├── MODERNIZATION-TASK.md
+├── inspect-legacy.sh
+├── modernization-assessment.md      ← generated
+├── modernization-plan.md            ← generated
+├── iss-travel-modernization-final-report.html  ← generated
+├── lab-session-summary.html         ← generated (this file)
+└── legacy-web/
+    ├── pom.xml                      ← servlet-api:4.0.1; liberty-plugin
+    └── src/
+        ├── main/
+        │   ├── java/com/ibm/demo/isstravel/
+        │   │   ├── legacy/
+        │   │   │   ├── LegacyNamingFactory.java   ← rewritten
+        │   │   │   ├── WebSphereSecurityUtil.java  ← rewritten
+        │   │   │   └── WebSphereServerInfo.java    ← rewritten
+        │   │   ├── model/TravelRequest.java         (unchanged)
+        │   │   ├── repository/TravelRepository.java (unchanged)
+        │   │   ├── util/JsonUtil.java               (unchanged)
+        │   │   └── web/
+        │   │       ├── HealthServlet.java           ← patched
+        │   │       └── TravelServlet.java           ← patched
+        │   ├── liberty/config/
+        │   │   └── server.xml                      ← created
+        │   └── webapp/
+        │       ├── index.html                      ← 3 labels updated
+        │       ├── main.js                          (unchanged)
+        │       └── WEB-INF/
+        │           └── web.xml                     ← Servlet 4.0
+        └── test/java/…/TravelRepositoryTest.java    (unchanged)</pre>
+  </div>
+
+  <h2 class="section-title gap-top">Environment</h2>
+  <table class="plain">
+    <thead><tr><th>Component</th><th>Version / Value</th></tr></thead>
+    <tbody>
+      <tr><td>JDK</td><td>OpenJDK 17.0.20.1 (Red Hat Inc., build 17.0.20.1+1-LTS)</td></tr>
+      <tr><td>Maven</td><td>Apache Maven 3.9.16</td></tr>
+      <tr><td>OS</td><td>Linux 5.14.0-687.46.1.el9_8.x86_64 (amd64)</td></tr>
+      <tr><td>Open Liberty runtime</td><td>24.0.0.6 (downloaded from Maven Central)</td></tr>
+      <tr><td>liberty-maven-plugin</td><td>3.10.3</td></tr>
+      <tr><td>javax.servlet-api</td><td>4.0.1</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div><!-- /shell -->
+
+<!-- ══ TIMESTAMP FOOTER ══ -->
+<div style="text-align:center;padding:20px 0 30px;font-size:12px;color:#9ca3af">
+  Report generated: <span id="ts"></span> &nbsp;&middot;&nbsp; Made with IBM Bob
+</div>
+
+<script>
+/* ── Timestamp ── */
+document.getElementById('ts').textContent = new Date().toLocaleString('en-GB',{
+  year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',timeZoneName:'short'
+});
+
+/* ── Tab switching ── */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (document.getElementById('searchInput').value) {
+    doSearch(document.getElementById('searchInput').value);
+  }
+}
+
+/* ── Card collapse ── */
+function toggleCard(header) {
+  const body = header.nextElementSibling;
+  const ch = header.querySelector('.chevron');
+  const open = body.classList.toggle('open');
+  ch.style.transform = open ? 'rotate(0deg)' : 'rotate(-90deg)';
+}
+
+/* ── Copy button ── */
+function copyCmd(btn, text) {
+  const t = text.replace(/\\n/g, '\n');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t).catch(() => fallbackCopy(t));
+  } else { fallbackCopy(t); }
+  btn.textContent = 'Copied!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+}
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+/* ── Search / filter ── */
+function clearHighlights(root) {
+  root.querySelectorAll('.search-highlight').forEach(el => {
+    el.replaceWith(document.createTextNode(el.textContent));
+  });
+}
+
+function highlightText(node, term) {
+  if (node.nodeType === 3) {
+    const idx = node.textContent.toLowerCase().indexOf(term);
+    if (idx === -1) return;
+    const span = document.createElement('mark');
+    span.className = 'search-highlight';
+    const after = node.splitText(idx);
+    after.splitText(term.length);
+    const clone = after.cloneNode(true);
+    span.appendChild(clone);
+    after.parentNode.replaceChild(span, after);
+  } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+    Array.from(node.childNodes).forEach(c => highlightText(c, term));
+  }
+}
+
+function doSearch(term) {
+  const t = term.trim().toLowerCase();
+  document.querySelectorAll('.searchable-card').forEach(card => {
+    clearHighlights(card);
+    if (!t) { card.classList.remove('hidden'); return; }
+    const match = card.textContent.toLowerCase().includes(t);
+    card.classList.toggle('hidden', !match);
+    if (match && t.length >= 2) highlightText(card, t);
+  });
+
+  // Also search non-card content in active tab
+  const active = document.querySelector('.tab-pane.active');
+  if (!active) return;
+  if (!t) {
+    active.querySelectorAll('tr.hidden-row').forEach(r => r.classList.remove('hidden-row'));
+    return;
+  }
+  active.querySelectorAll('table.api-table tbody tr, table.plain tbody tr, table.comp-table tbody tr').forEach(row => {
+    const match = row.textContent.toLowerCase().includes(t);
+    row.style.display = match ? '' : 'none';
+  });
+}
+
+// Reset row display on tab switch
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  const orig = btn.onclick;
+  btn.onclick = function(e) {
+    document.querySelectorAll('tbody tr').forEach(r => r.style.display = '');
+    if (orig) orig.call(this, e);
+  };
+});
+</script>
+</body>
+</html>
