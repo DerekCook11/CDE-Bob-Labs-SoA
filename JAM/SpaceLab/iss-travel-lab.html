@@ -157,7 +157,8 @@ tr:nth-child(even) td{background:#fafbfc}
     <a onclick="go('p3')" id="n-p3"><span class="snum">3</span>Implement modernization</a>
     <a onclick="go('p4')" id="n-p4"><span class="snum">4</span>Run &amp; verify</a>
     <a onclick="go('p5')" id="n-p5"><span class="snum">5</span>Confirm no WebSphere dependencies</a>
-    <a onclick="go('p6')" id="n-p6"><span class="snum">6</span>Generate lab &amp; report</a>
+    <a onclick="go('p6')" id="n-p6"><span class="snum">6</span>Generate final report</a>
+    <a onclick="go('p7')" id="n-p7"><span class="snum">7</span>Session summary <em style="font-size:9px;opacity:.7">OPTIONAL</em></a>
     <span class="nsec">Reference</span>
     <a onclick="go('concepts')" id="n-concepts"><span class="snum">?</span>Key Concepts</a>
     <a onclick="go('complete')" id="n-complete"><span class="snum">&#10003;</span>Completion</a>
@@ -834,7 +835,90 @@ The report should include:
     </div>
     <div class="step-foot">
       <button class="btn bx" onclick="go('p5')">&larr; Back</button>
-      <button class="btn bg" onclick="done(6);go('complete')">&#10003; Complete Lab</button>
+      <button class="btn bp" onclick="done(6);go('p7')">Mark Complete &amp; Optional Summary &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── OPTIONAL STEP 7 ── -->
+<div class="view" id="view-p7">
+  <div class="step-card">
+    <div class="step-top">
+      <div class="step-num-row"><div class="sn">7</div><h2>Create an interactive lab session summary <span class="badge ba">OPTIONAL</span></h2></div>
+      <div class="why">Use Bob to turn the entire workshop activity into a polished, interactive review report showing what was done, what changed, what was tested, and what was created.</div>
+    </div>
+    <div class="step-body">
+      <div class="bob-bar"><div class="bob-icon">B</div><p>This optional step is ideal for workshop review, knowledge transfer, evidence, or sharing the completed modernization session with others. Bob should use the actual activity and results from this workspace rather than inventing missing details.</p></div>
+      <div class="prompt-label"><span>BOB PROMPT</span> Optional Step 7</div>
+      <div class="prompt-wrap">
+        <div class="prompt-box" id="pb7">Create a comprehensive interactive review report as a standalone HTML file named `lab-session-summary.html`.
+
+Use the actual work performed during this lab session and the current workspace as the source of truth. Do not invent commands, test results, files, prompts, status codes, or outcomes that were not actually observed.
+
+The report must include:
+1. Executive Summary &amp; Session Metrics
+   - Number of Bob prompts processed
+   - Commands executed
+   - Java version transition
+   - Runtime transition
+   - Packaging changes
+
+2. Dedicated "Before vs After State" comparison section
+   - Visual side-by-side architecture diagrams (ASCII/text-art) of the legacy vs modernized systems
+   - Comprehensive comparison matrix detailing Java version, server runtime, packaging (EAR vs WAR), APIs/namespaces, proprietary dependencies/descriptors, and build status
+
+3. Step-by-step Lab Session Journal
+   - Every user prompt processed during the lab
+   - Files inspected
+   - Files modified, created, or removed
+   - Commands executed
+   - Key outcomes from each step
+
+4. API Test Matrix tab
+   - All REST endpoints actually tested
+   - HTTP methods
+   - Expected HTTP status codes
+   - Actual HTTP status codes
+   - Actual response payloads
+
+5. All Commands Log
+   - Formatted CLI, Maven, and cURL command snippets
+   - One-click Copy button for each command or command block
+
+6. Created Artifacts tab
+   - All generated documents, configuration files, and reports
+   - Brief purpose of each artifact
+
+7. Interactive UI
+   - Tab switching
+   - Collapsible step/session cards
+   - Real-time search/filter input that filters relevant report content
+   - Clear Before/After visual styling
+   - Responsive layout suitable for presenting during a workshop
+
+Additional requirements:
+- Produce one self-contained standalone HTML file with embedded CSS and JavaScript.
+- Do not require external libraries, CDNs, or internet access.
+- Include a generated timestamp.
+- Clearly distinguish observed session evidence from planned/expected outcomes.
+- If a requested metric cannot be determined from the session evidence, display "Not captured" rather than guessing.
+- Make the report professional, easy to scan, and suitable for sharing after the workshop.</div>
+        <button class="copy-btn" onclick="copyPrompt('pb7',this)">Copy</button>
+      </div>
+      <div class="sec">What to expect</div>
+      <p>Bob creates <code>lab-session-summary.html</code> in the workspace root. Open it in a browser to review the complete modernization journey as an interactive workshop report.</p>
+      <div class="success-box"><strong>Success:</strong> <code>lab-session-summary.html</code> opens as a standalone interactive report and accurately reflects the prompts, commands, file changes, API tests, artifacts, and before/after state from this lab session.</div>
+      <ul class="chk-list">
+        <li><span class="chkbox" onclick="tick(this)"></span><span><code>lab-session-summary.html</code> was created</span></li>
+        <li><span class="chkbox" onclick="tick(this)"></span><span>Before/After architecture and comparison matrix are present</span></li>
+        <li><span class="chkbox" onclick="tick(this)"></span><span>Session journal, API tests, commands, and artifacts reflect actual evidence</span></li>
+        <li><span class="chkbox" onclick="tick(this)"></span><span>Tabs, collapsible cards, copy buttons, and search/filter controls work</span></li>
+      </ul>
+      <div class="what-happened"><strong class="title">What just happened?</strong><p>Bob consolidated the workshop activity into a single interactive review artifact. Instead of only showing the final code, the report tells the modernization story: where the application started, what Bob was asked to do, what changed, which commands and tests were run, and what the final application looks like.</p><p><strong>Why this matters:</strong> This creates a useful post-workshop artifact for review, demonstrations, knowledge transfer, and documenting modernization evidence.</p></div>
+    </div>
+    <div class="step-foot">
+      <button class="btn bx" onclick="go('p6')">&larr; Back</button>
+      <button class="btn bg" onclick="go('complete')">&#10003; Finish Lab</button>
     </div>
   </div>
 </div>
@@ -876,7 +960,7 @@ The report should include:
     <p>You have used IBM Bob to fully migrate the ISS Travel App from WebSphere 9 / Java 8 to Open Liberty 24 / Java 17.</p>
   </div>
 
-  <div class="sec">The 6 prompts you used</div>
+  <div class="sec">The 6 core prompts you used + optional session summary</div>
   <table>
     <tr><th>#</th><th>Prompt</th><th>Bob's output</th></tr>
     <tr><td>1</td><td>Analyse the legacy app</td><td><code>modernization-assessment.md</code></td></tr>
@@ -885,6 +969,7 @@ The report should include:
     <tr><td>4</td><td>Run &amp; verify application</td><td>6 API checks passed + browser UI verified</td></tr>
     <tr><td>5</td><td>Confirm no WebSphere dependencies</td><td>All 9 WebSphere-cleanliness checks passed</td></tr>
     <tr><td>6</td><td>Generate final report</td><td><code>iss-travel-modernization-final-report.html</code></td></tr>
+    <tr><td>7 <span class="badge ba">OPTIONAL</span></td><td>Generate interactive session summary</td><td><code>lab-session-summary.html</code></td></tr>
   </table>
 
   <div class="sec">What changed in the codebase</div>
@@ -936,7 +1021,7 @@ The report should include:
 <script>
 var TOTAL = 6;
 var completed = {};
-var views = ['intro','setup','p1','p2','p3','p4','p5','p6','concepts','complete'];
+var views = ['intro','setup','p1','p2','p3','p4','p5','p6','p7','concepts','complete'];
 
 function go(id) {
   views.forEach(function(v) {
